@@ -6,13 +6,16 @@ RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-r
 FROM php:8.4-apache
 RUN docker-php-ext-install pdo pdo_pgsql && aenmod rewrite
 
-COPY --from=composer /app/vendor /var/www/html/vendor
-COPY . /var/www/html
+WORKDIR /var/www/html
 
-RUN cp -rnT vendor/laravel/framework/src/Illuminate/Foundation/Console/Resources/views/storage/framework/sessions /var/www/html/storage/framework/sessions && \
-    cp -rnT vendor/laravel/framework/src/Illuminate/Foundation/Console/Resources/views/storage/framework/views /var/www/html/storage/framework/views && \
-    cp -rnT vendor/laravel/framework/src/Illuminate/Foundation/Console/Resources/views/storage/logs /var/www/html/storage/logs && \
-    chmod -R 775 /var/www/html/storage && \
-    chmod -R 775 /var/www/html/bootstrap/cache
+COPY --from=composer /app/vendor ./vendor
+COPY . .
+
+RUN cp .env.example .env 2>/dev/null || true
+RUN php artisan key:generate || true
+
+RUN mkdir -p storage/framework/{sessions,views,logs} bootstrap/cache && \
+    chmod -R 775 storage bootstrap && \
+    chown -R www-data:www-data .
 
 EXPOSE 8080
