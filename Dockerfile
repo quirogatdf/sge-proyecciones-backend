@@ -4,7 +4,7 @@ COPY . .
 RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-reqs --no-scripts
 
 FROM php:8.4-apache
-RUN docker-php-ext-install pdo pdo_pgsql && aenmod rewrite
+RUN apt-get update && apt-get install -y libpq-dev && docker-php-ext-install pdo pdo_pgsql && aenmod rewrite
 
 WORKDIR /var/www/html
 
