@@ -1,21 +1,19 @@
-FROM composer:2 AS composer
-WORKDIR /app
-COPY . .
-RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-reqs --no-scripts
-
-FROM php:8.4-apache
-RUN apt-get update && apt-get install -y libpq-dev && docker-php-ext-install pdo pdo_pgsql && aenmod rewrite
+FROM php:8.4-cli AS builder
 
 WORKDIR /var/www/html
 
-COPY --from=composer /app/vendor ./vendor
+RUN apt-get update && apt-get install -y libpq-dev postgresql-client \
+    && docker-php-ext-install pdo pdo_pgsql
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-reqs --no-scripts
+
 COPY . .
-
-RUN cp .env.example .env 2>/dev/null || true
-RUN php artisan key:generate || true
-
-RUN mkdir -p storage/framework/{sessions,views,logs} bootstrap/cache && \
-    chmod -R 775 storage bootstrap && \
-    chown -R www-data:www-data .
+RUN chown -R www-data:www-data /var/www/html \
+    && mkdir -p storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 8080
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
