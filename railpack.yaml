@@ -1,2 +1,7 @@
-PORT=8080
-WEB_COMMAND=php -S 0.0.0.0:${PORT:-8080} -t public
+build:
+  buildpack: PHP
+  php:
+    version: "8.4"
+
+deploy:
+  start: apache2-foreground
