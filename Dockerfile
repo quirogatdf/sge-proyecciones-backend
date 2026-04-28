@@ -12,9 +12,14 @@ COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-reqs --no-scripts
 
 COPY . .
+
+RUN php artisan key:generate
+
 RUN chown -R www-data:www-data /var/www/html \
     && mkdir -p storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-EXPOSE 8080
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+COPY docker/apache2/sites-enabled/000-default.conf /etc/apache2/sites-available/000-default.conf
+RUN a2ensite 000-default.conf
+
+EXPOSE 80
