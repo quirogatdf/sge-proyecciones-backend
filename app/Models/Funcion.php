@@ -7,13 +7,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Funcion extends Model
+final class Funcion extends Model
 {
     use HasFactory;
+
+    protected $table = 'funciones';
 
     protected $fillable = [
         'nombre',
         'sigla',
-        'observacion',
     ];
 }

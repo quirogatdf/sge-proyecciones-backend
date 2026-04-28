@@ -44,19 +44,13 @@ final class InstitucionController extends Controller
 
     public function update(UpdateInstitucionRequest $request, int $institucion): JsonResponse
     {
-        try {
-            $institucion = Institucion::findOrFail($institucion);
-            $institucion->update($request->validated());
-            
-            return response()->json([
-                'data' => new InstitucionResource($institucion->load('nivel')),
-                'message' => 'Institución actualizada exitosamente',
-            ]);
-        } catch (\Throwable $e) {
-            \Log::error('Error en update institucion: ' . $e->getMessage());
-            \Log::error('Trace: ' . $e->getTraceAsString());
-            throw $e;
-        }
+        $institucion = Institucion::findOrFail($institucion);
+        $institucion->update($request->validated());
+        
+        return response()->json([
+            'data' => new InstitucionResource($institucion->load('nivel')),
+            'message' => 'Institución actualizada exitosamente',
+        ]);
     }
 
     public function destroy(int $institucion): Response
