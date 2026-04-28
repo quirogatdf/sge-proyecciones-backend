@@ -1,10 +1,10 @@
 FROM composer:2 AS composer
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --prefer-dist
+RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-reqs
 
 FROM php:8.4-apache
-RUN aenmod rewrite
+RUN docker-php-ext-install pdo pdo_pgsql && aenmod rewrite
 
 COPY --from=composer /app/vendor /var/www/html/vendor
 COPY . /var/www/html
