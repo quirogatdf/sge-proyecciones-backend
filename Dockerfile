@@ -2,7 +2,8 @@ FROM php:8.4-apache
 
 RUN apt-get update && apt-get install -y libpq-dev postgresql-client zip unzip \
     && docker-php-ext-install pdo pdo_pgsql \
-    && a2enmod rewrite
+    && a2dismod mpm_event \
+    && a2enmod mpm_prefork rewrite
 
 WORKDIR /var/www/html
 
@@ -19,8 +20,5 @@ RUN php artisan key:generate 2>/dev/null || true
 RUN chown -R www-data:www-data /var/www/html \
     && mkdir -p storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
-
-COPY docker/apache2/sites-enabled/000-default.conf /etc/apache2/sites-available/000-default.conf
-RUN a2ensite 000-default.conf
 
 EXPOSE 80
