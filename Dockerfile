@@ -1,7 +1,7 @@
 FROM composer:2 AS composer
 WORKDIR /app
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-reqs
+COPY . .
+RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-reqs --no-scripts
 
 FROM php:8.4-apache
 RUN docker-php-ext-install pdo pdo_pgsql && aenmod rewrite
