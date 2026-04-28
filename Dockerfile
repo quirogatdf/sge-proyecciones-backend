@@ -13,7 +13,8 @@ RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-r
 
 COPY . .
 
-RUN php artisan key:generate
+RUN cp .env.example .env 2>/dev/null || true
+RUN php artisan key:generate 2>/dev/null || true
 
 RUN chown -R www-data:www-data /var/www/html \
     && mkdir -p storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
