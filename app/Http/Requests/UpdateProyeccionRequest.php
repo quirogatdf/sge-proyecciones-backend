@@ -38,6 +38,11 @@ final class UpdateProyeccionRequest extends FormRequest
             'resolucion_ministerial_ext' => ['sometimes', 'nullable', 'string', 'max:100'],
             'disposicion_sgnij' => ['sometimes', 'nullable', 'string', 'max:100'],
             'rect_disposoco_sgnij' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'año' => ['sometimes', 'nullable', 'string', 'max:4'],
+            'id_puesto' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'resolucion_ministerial_rect1' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'resolucion_ministerial_rect2' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'resolucion_previa_continuidad' => ['sometimes', 'nullable', 'string', 'max:100'],
         ];
     }
 
@@ -78,6 +83,16 @@ final class UpdateProyeccionRequest extends FormRequest
             'disposicion_sgnij.max' => 'La disposición SGNIJ no puede exceder los 100 caracteres.',
             'rect_disposoco_sgnij.string' => 'La rectificación debe ser texto.',
             'rect_disposoco_sgnij.max' => 'La rectificación no puede exceder los 100 caracteres.',
+            'año.string' => 'El año debe ser texto.',
+            'año.max' => 'El año no puede exceder los 4 caracteres.',
+            'id_puesto.string' => 'El puesto debe ser texto.',
+            'id_puesto.max' => 'El puesto no puede exceder los 100 caracteres.',
+            'resolucion_ministerial_rect1.string' => 'La resolución ministerial rectificada 1 debe ser texto.',
+            'resolucion_ministerial_rect1.max' => 'La resolución ministerial rectificada 1 no puede exceder los 100 caracteres.',
+            'resolucion_ministerial_rect2.string' => 'La resolución ministerial rectificada 2 debe ser texto.',
+            'resolucion_ministerial_rect2.max' => 'La resolución ministerial rectificada 2 no puede exceder los 100 caracteres.',
+            'resolucion_previa_continuidad.string' => 'La resolución previa de continuidad debe ser texto.',
+            'resolucion_previa_continuidad.max' => 'La resolución previa de continuidad no puede exceder los 100 caracteres.',
         ];
     }
 

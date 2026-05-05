@@ -33,6 +33,11 @@ class ProyeccionResource extends JsonResource
             'resolucion_ministerial_ext' => $this->resolucion_ministerial_ext,
             'disposicion_sgnij' => $this->disposicion_sgnij,
             'rect_disposoco_sgnij' => $this->rect_disposoco_sgnij,
+            'año' => $this->año,
+            'id_puesto' => $this->id_puesto,
+            'resolucion_ministerial_rect1' => $this->resolucion_ministerial_rect1,
+            'resolucion_ministerial_rect2' => $this->resolucion_ministerial_rect2,
+            'resolucion_previa_continuidad' => $this->resolucion_previa_continuidad,
             // Including relationships if needed, but for now just the fields
             'nivel' => $this->whenLoaded('nivel'),
             'cargo' => $this->whenLoaded('cargo'),
