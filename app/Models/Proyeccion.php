@@ -12,13 +12,16 @@ class Proyeccion extends Model {
         'horar', 'cargos', 'id_cargo', 'id_funcion', 'id_turno',
         'fecha_desde', 'fecha_hasta', 'id_institucion',
         'resolucion_ministerial', 'resolucion_ministerial_ext',
-        'disposicion_sgnij', 'rect_disposoco_sgnij'
+        'disposicion_sgnij', 'rect_disposoco_sgnij',
+        'año', 'id_puesto', 'resolucion_ministerial_rect1', 'resolucion_ministerial_rect2',
+        'resolucion_previa_continuidad'
     ];
     protected $casts = [
         'estado' => EstadoProyeccion::class,
         'motivo' => MotivoProyeccion::class,
         'fecha_desde' => 'date',
         'fecha_hasta' => 'date',
+        'orden' => 'integer',
         'horar' => 'integer',
         'cargos' => 'integer',
     ];
