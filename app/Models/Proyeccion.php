@@ -14,7 +14,7 @@ class Proyeccion extends Model {
         'resolucion_ministerial', 'resolucion_ministerial_ext',
         'disposicion_sgnij', 'rect_disposoco_sgnij',
         'año', 'id_puesto', 'resolucion_ministerial_rect1', 'resolucion_ministerial_rect2',
-        'resolucion_previa_continuidad'
+        'resolucion_previa_continuidad', 'destino_anterior', 'destino_nuevo'
     ];
     protected $casts = [
         'estado' => EstadoProyeccion::class,

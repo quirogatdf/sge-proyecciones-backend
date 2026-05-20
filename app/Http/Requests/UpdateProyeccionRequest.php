@@ -25,7 +25,7 @@ final class UpdateProyeccionRequest extends FormRequest
             'estado' => ['sometimes', 'required', Rule::enum(EstadoProyeccion::class)],
             'n_expediente' => ['sometimes', 'nullable', 'string', 'max:50'],
             'motivo' => ['sometimes', 'required', Rule::enum(MotivoProyeccion::class)],
-            'orden' => ['sometimes', 'nullable', 'integer', 'min:1'],
+            'orden' => ['sometimes', 'required', 'integer', 'min:1'],
             'horar' => ['sometimes', 'nullable', 'integer', 'min:0'],
             'cargos' => ['sometimes', 'nullable', 'integer', 'min:0'],
             'id_cargo' => ['sometimes', 'required', 'integer', 'exists:cargos,id'],
@@ -38,11 +38,13 @@ final class UpdateProyeccionRequest extends FormRequest
             'resolucion_ministerial_ext' => ['sometimes', 'nullable', 'string', 'max:100'],
             'disposicion_sgnij' => ['sometimes', 'nullable', 'string', 'max:100'],
             'rect_disposoco_sgnij' => ['sometimes', 'nullable', 'string', 'max:100'],
-            'año' => ['sometimes', 'nullable', 'string', 'max:4'],
+            'año' => ['sometimes', 'required', 'string', 'max:4'],
             'id_puesto' => ['sometimes', 'nullable', 'string', 'max:100'],
             'resolucion_ministerial_rect1' => ['sometimes', 'nullable', 'string', 'max:100'],
             'resolucion_ministerial_rect2' => ['sometimes', 'nullable', 'string', 'max:100'],
             'resolucion_previa_continuidad' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'destino_anterior' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'destino_nuevo' => ['sometimes', 'nullable', 'string', 'max:255'],
         ];
     }
 
@@ -58,6 +60,7 @@ final class UpdateProyeccionRequest extends FormRequest
             'n_expediente.max' => 'El número de expediente no puede exceder los 50 caracteres.',
             'motivo.required' => 'El motivo es obligatorio.',
             'motivo.enum' => 'El motivo debe ser: Creación, Continuidad, Baja o Sin definir.',
+            'orden.required' => 'El orden es obligatorio.',
             'orden.integer' => 'El orden debe ser un número entero.',
             'orden.min' => 'El orden debe ser al menos 1.',
             'horar.integer' => 'Las horas deben ser un número entero.',
@@ -83,6 +86,7 @@ final class UpdateProyeccionRequest extends FormRequest
             'disposicion_sgnij.max' => 'La disposición SGNIJ no puede exceder los 100 caracteres.',
             'rect_disposoco_sgnij.string' => 'La rectificación debe ser texto.',
             'rect_disposoco_sgnij.max' => 'La rectificación no puede exceder los 100 caracteres.',
+            'año.required' => 'El año es obligatorio.',
             'año.string' => 'El año debe ser texto.',
             'año.max' => 'El año no puede exceder los 4 caracteres.',
             'id_puesto.string' => 'El puesto debe ser texto.',
@@ -93,6 +97,10 @@ final class UpdateProyeccionRequest extends FormRequest
             'resolucion_ministerial_rect2.max' => 'La resolución ministerial rectificada 2 no puede exceder los 100 caracteres.',
             'resolucion_previa_continuidad.string' => 'La resolución previa de continuidad debe ser texto.',
             'resolucion_previa_continuidad.max' => 'La resolución previa de continuidad no puede exceder los 100 caracteres.',
+            'destino_anterior.string' => 'El destino anterior debe ser texto.',
+            'destino_anterior.max' => 'El destino anterior no puede exceder los 255 caracteres.',
+            'destino_nuevo.string' => 'El destino nuevo debe ser texto.',
+            'destino_nuevo.max' => 'El destino nuevo no puede exceder los 255 caracteres.',
         ];
     }
 
