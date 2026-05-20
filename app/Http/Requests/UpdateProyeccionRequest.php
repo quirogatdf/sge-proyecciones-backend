@@ -44,7 +44,7 @@ final class UpdateProyeccionRequest extends FormRequest
             'resolucion_ministerial_rect2' => ['sometimes', 'nullable', 'string', 'max:100'],
             'resolucion_previa_continuidad' => ['sometimes', 'nullable', 'string', 'max:100'],
             'destino_anterior' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'destino_nuevo' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'destino_nuevo' => ['sometimes', 'required', 'string', 'max:255'],
         ];
     }
 
@@ -99,6 +99,7 @@ final class UpdateProyeccionRequest extends FormRequest
             'resolucion_previa_continuidad.max' => 'La resolución previa de continuidad no puede exceder los 100 caracteres.',
             'destino_anterior.string' => 'El destino anterior debe ser texto.',
             'destino_anterior.max' => 'El destino anterior no puede exceder los 255 caracteres.',
+            'destino_nuevo.required' => 'El destino nuevo es obligatorio.',
             'destino_nuevo.string' => 'El destino nuevo debe ser texto.',
             'destino_nuevo.max' => 'El destino nuevo no puede exceder los 255 caracteres.',
         ];

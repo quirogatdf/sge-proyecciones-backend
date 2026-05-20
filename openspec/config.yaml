@@ -2,10 +2,10 @@
 schema: spec-driven
 
 context: |
-  Tech stack: Laravel 13 with PHP 8.3
+  Tech stack: Laravel 13 with PHP 8.4
   Architecture: Standard Laravel MVC with Eloquent ORM
-  Testing: PHPUnit with Unit and Feature test suites
-  Style: Laravel Pint available for code formatting
+  Testing: PHPUnit 12.5+ with Unit and Feature test suites
+  Style: Laravel Pint for formatting
 
 strict_tdd: true
 
@@ -34,27 +34,28 @@ rules:
 
 testing:
   ## Testing Capabilities
+
   **Strict TDD Mode**: enabled
-  **Detected**: Mon Apr 27 2026
+  **Detected**: Wed Apr 29 2026
 
   ### Test Runner
-  - Command: `php artisan test` or `vendor/bin/phpunit`
-  - Framework: PHPUnit
+  - Command: `composer test` (runs `php artisan test`)
+  - Framework: PHPUnit 12.5+
 
   ### Test Layers
   | Layer | Available | Tool |
   |-------|-----------|------|
-  | Unit | ✅ | PHPUnit |
-  | Integration | ✅ | PHPUnit (Feature tests) |
+  | Unit | ✅ | PHPUnit (tests/Unit) |
+  | Integration | ✅ | Laravel TestCase (tests/Feature) |
   | E2E | ❌ | Not installed |
 
   ### Coverage
   - Available: ✅
-  - Command: `php artisan test --coverage` or `vendor/bin/phpunit --coverage-html coverage`
+  - Command: `php artisan test --coverage`
 
   ### Quality Tools
   | Tool | Available | Command |
   |------|-----------|---------|
-  | Linter | ✅ | PHPStan (if installed) or Laravel Pint for basic checks |
-  | Type checker | ❌ | PHPStan would be needed for strict type checking |
-  | Formatter | ✅ | `vendor/bin/pint`
+  | Linter | ✅ | `./vendor/bin/pint` |
+  | Type checker | ❌ | Not installed (PHPStan/Psalm not present) |
+  | Formatter | ✅ | `./vendor/bin/pint` |
