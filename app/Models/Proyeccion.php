@@ -14,7 +14,8 @@ class Proyeccion extends Model {
         'resolucion_ministerial', 'resolucion_ministerial_ext',
         'disposicion_sgnij', 'rect_disposoco_sgnij',
         'año', 'id_puesto', 'resolucion_ministerial_rect1', 'resolucion_ministerial_rect2',
-        'resolucion_previa_continuidad', 'destino_anterior', 'destino_nuevo'
+        'resolucion_previa_continuidad', 'destino_anterior', 'destino_nuevo',
+        'id_resolucion'
     ];
     protected $casts = [
         'estado' => EstadoProyeccion::class,
@@ -30,4 +31,5 @@ class Proyeccion extends Model {
     public function funcion(): BelongsTo { return $this->belongsTo(Funcion::class, 'id_funcion'); }
     public function turno(): BelongsTo { return $this->belongsTo(Turno::class, 'id_turno'); }
     public function institucion(): BelongsTo { return $this->belongsTo(Institucion::class, 'id_institucion'); }
+    public function resolucion(): BelongsTo { return $this->belongsTo(Resolucion::class, 'id_resolucion'); }
 }

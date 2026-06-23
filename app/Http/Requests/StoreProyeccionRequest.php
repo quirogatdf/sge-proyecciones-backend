@@ -45,6 +45,7 @@ final class StoreProyeccionRequest extends FormRequest
             'resolucion_previa_continuidad' => ['nullable', 'string', 'max:100'],
             'destino_anterior' => ['nullable', 'string', 'max:255'],
             'destino_nuevo' => ['required', 'string', 'max:255'],
+            'id_resolucion' => ['nullable', 'integer', 'exists:resoluciones,id'],
         ];
     }
 
@@ -107,6 +108,8 @@ final class StoreProyeccionRequest extends FormRequest
             'destino_nuevo.required' => 'El destino nuevo es obligatorio.',
             'destino_nuevo.string' => 'El destino nuevo debe ser texto.',
             'destino_nuevo.max' => 'El destino nuevo no puede exceder los 255 caracteres.',
+            'id_resolucion.integer' => 'La resolución debe ser un número entero.',
+            'id_resolucion.exists' => 'La resolución seleccionada no existe.',
         ];
     }
 

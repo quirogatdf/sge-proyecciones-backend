@@ -40,12 +40,14 @@ class ProyeccionResource extends JsonResource
             'resolucion_previa_continuidad' => $this->resolucion_previa_continuidad,
             'destino_anterior' => $this->destino_anterior,
             'destino_nuevo' => $this->destino_nuevo,
+            'id_resolucion' => $this->id_resolucion,
             // Including relationships if needed, but for now just the fields
             'nivel' => $this->whenLoaded('nivel'),
             'cargo' => $this->whenLoaded('cargo'),
             'funcion' => $this->whenLoaded('funcion'),
             'turno' => $this->whenLoaded('turno'),
             'institucion' => $this->whenLoaded('institucion'),
+            'resolucion' => $this->whenLoaded('resolucion'),
         ];
     }
 }
