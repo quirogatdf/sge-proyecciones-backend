@@ -16,6 +16,7 @@ final class CargoResource extends JsonResource
             'codigo' => $this->codigo,
             'nombre' => $this->nombre,
             'descripcion' => $this->descripcion,
+            'tipo' => $this->tipo,
         ];
     }
 }

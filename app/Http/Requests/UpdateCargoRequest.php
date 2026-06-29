@@ -24,6 +24,7 @@ final class UpdateCargoRequest extends FormRequest
             'codigo' => ['sometimes', 'required', 'string', 'max:4', Rule::unique('cargos', 'codigo')->ignore($cargoId)],
             'nombre' => ['sometimes', 'required', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:500'],
+            'tipo' => ['nullable', 'string', 'in:H,C'],
         ];
     }
 
@@ -39,6 +40,7 @@ final class UpdateCargoRequest extends FormRequest
             'nombre.max' => 'El nombre no puede exceder los 255 caracteres.',
             'descripcion.string' => 'La descripción debe ser una cadena de texto.',
             'descripcion.max' => 'La descripción no puede exceder los 500 caracteres.',
+            'tipo.in' => 'El tipo debe ser H (Honorario) o C (Contratado).',
         ];
     }
 

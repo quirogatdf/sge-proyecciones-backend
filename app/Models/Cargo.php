@@ -15,5 +15,6 @@ class Cargo extends Model
         'codigo',
         'nombre',
         'descripcion',
+        'tipo',
     ];
 }
