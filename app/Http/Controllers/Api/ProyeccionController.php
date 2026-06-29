@@ -122,7 +122,7 @@ final class ProyeccionController extends Controller
      */
     public function statsByInstitucion(Request $request): JsonResponse
     {
-        $query = Proyeccion::with(['cargo', 'institucion'])
+        $query = Proyeccion::with('institucion')
             ->whereIn('motivo', ['Creación', 'Continuidad']);
 
         if ($request->filled('institucion_id')) {
@@ -148,21 +148,24 @@ final class ProyeccionController extends Controller
             $continuidadHorasH = 0;
 
             foreach ($items as $p) {
-                $isH = $p->cargo && $p->cargo->tipo === 'H';
                 $isCreacion = $p->motivo === 'Creación';
+                $horas = (int) ($p->horar ?? 0);
+                $cargos = (int) ($p->cargos ?? 0);
 
+                // Si tiene horas, va al bucket H (honorario)
+                // Si tiene cargos, va al bucket No H (contratado)
+                // Esto evita depender de cargo.tipo que puede ser null
                 if ($isCreacion) {
-                    if ($isH) {
-                        $creacionHorasH += $p->horar ?? 0;
+                    if ($horas > 0) {
+                        $creacionHorasH += $horas;
                     } else {
-                        $creacionNoH += $p->cargos ?? 1;
+                        $creacionNoH += $cargos > 0 ? $cargos : 1;
                     }
                 } else {
-                    // Continuidad
-                    if ($isH) {
-                        $continuidadHorasH += $p->horar ?? 0;
+                    if ($horas > 0) {
+                        $continuidadHorasH += $horas;
                     } else {
-                        $continuidadNoH += $p->cargos ?? 1;
+                        $continuidadNoH += $cargos > 0 ? $cargos : 1;
                     }
                 }
             }
