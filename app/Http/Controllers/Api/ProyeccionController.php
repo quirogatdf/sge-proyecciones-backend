@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateProyeccionRequest;
 use App\Http\Resources\ProyeccionResource;
 use App\Models\Proyeccion;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 final class ProyeccionController extends Controller
@@ -108,6 +109,76 @@ final class ProyeccionController extends Controller
 
         return response()->json([
             'data' => ProyeccionResource::collection($proyecciones),
+        ]);
+    }
+
+    /**
+     * Get stats grouped by institution for the dashboard chart.
+     * Accepts optional ?anio=XXXX and ?institucion_id=X filters.
+     * Returns aggregation by institution with break-down by motivo and cargo type.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function statsByInstitucion(Request $request): JsonResponse
+    {
+        $query = Proyeccion::with(['cargo', 'institucion'])
+            ->whereIn('motivo', ['Creación', 'Continuidad']);
+
+        if ($request->filled('institucion_id')) {
+            $query->where('id_institucion', $request->integer('institucion_id'));
+        }
+
+        if ($request->filled('anio')) {
+            $query->where('año', $request->string('anio'));
+        }
+
+        $proyecciones = $query->get();
+
+        // Group by institution first
+        $grouped = $proyecciones->groupBy('id_institucion');
+
+        $result = $grouped->map(function ($items, $institucionId) {
+            $first = $items->first();
+            $institucionName = $first?->institucion?->nombre ?? "Institución #{$institucionId}";
+
+            $creacionNoH = 0;
+            $creacionHorasH = 0;
+            $continuidadNoH = 0;
+            $continuidadHorasH = 0;
+
+            foreach ($items as $p) {
+                $isH = $p->cargo && $p->cargo->tipo === 'H';
+                $isCreacion = $p->motivo === 'Creación';
+
+                if ($isCreacion) {
+                    if ($isH) {
+                        $creacionHorasH += $p->horar ?? 0;
+                    } else {
+                        $creacionNoH += $p->cargos ?? 1;
+                    }
+                } else {
+                    // Continuidad
+                    if ($isH) {
+                        $continuidadHorasH += $p->horar ?? 0;
+                    } else {
+                        $continuidadNoH += $p->cargos ?? 1;
+                    }
+                }
+            }
+
+            return [
+                'institucion_id' => (int) $institucionId,
+                'institucion' => $institucionName,
+                'creacion_no_h' => $creacionNoH,
+                'creacion_horas_h' => $creacionHorasH,
+                'continuidad_no_h' => $continuidadNoH,
+                'continuidad_horas_h' => $continuidadHorasH,
+            ];
+        })->values();
+
+        return response()->json([
+            'data' => $result,
         ]);
     }
 }

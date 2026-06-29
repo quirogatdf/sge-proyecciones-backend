@@ -17,5 +17,6 @@ Route::apiResource('turnos', TurnoController::class)->only(['index', 'show', 'st
 Route::apiResource('funciones', FuncionController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
 Route::apiResource('instituciones', InstitucionController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
 Route::apiResource('resoluciones', ResolucionController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+Route::get('proyecciones/stats/by-institucion', [ProyeccionController::class, 'statsByInstitucion']);
 Route::get('proyecciones/nivel/{idNivel}', [ProyeccionController::class, 'byNivel']);
 Route::apiResource('proyecciones', ProyeccionController::class);
