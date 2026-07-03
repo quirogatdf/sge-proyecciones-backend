@@ -4,17 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-
-final class StoreInstitucionRequest extends FormRequest
+final class StoreInstitucionRequest extends ApiRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
         return [
@@ -42,13 +33,5 @@ final class StoreInstitucionRequest extends FormRequest
             'anexo.string' => 'El anexo debe ser una cadena de texto.',
             'anexo.max' => 'El anexo no puede exceder los 20 caracteres.',
         ];
-    }
-
-    protected function failedValidation(Validator $validator): void
-    {
-        throw new HttpResponseException(response()->json([
-            'message' => 'Los datos proporcionados no son válidos.',
-            'errors' => $validator->errors(),
-        ], 422));
     }
 }

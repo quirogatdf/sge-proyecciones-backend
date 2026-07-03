@@ -4,17 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
-
-final class UpdateTurnoRequest extends FormRequest
+final class UpdateTurnoRequest extends ApiRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
         return [
@@ -32,13 +23,5 @@ final class UpdateTurnoRequest extends FormRequest
             'sigla.string' => 'La sigla debe ser una cadena de texto.',
             'sigla.max' => 'La sigla no puede exceder los 10 caracteres.',
         ];
-    }
-
-    protected function failedValidation(Validator $validator): void
-    {
-        throw new HttpResponseException(response()->json([
-            'message' => 'Los datos proporcionados no son válidos.',
-            'errors' => $validator->errors(),
-        ], 422));
     }
 }

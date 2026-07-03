@@ -2,13 +2,25 @@
 
 namespace Tests\Feature;
 
+use App\Enums\RolUsuario;
 use App\Models\Nivel;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class NivelApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected User $adminUser;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->adminUser = User::factory()->admin()->create();
+        $this->actingAs($this->adminUser);
+    }
 
     public function test_index_returns_all_niveles(): void
     {

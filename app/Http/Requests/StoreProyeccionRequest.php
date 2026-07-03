@@ -4,20 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\Rule;
 use App\Enums\EstadoProyeccion;
 use App\Enums\MotivoProyeccion;
+use Illuminate\Validation\Rule;
 
-final class StoreProyeccionRequest extends FormRequest
+final class StoreProyeccionRequest extends ApiRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
         return [
@@ -111,13 +103,5 @@ final class StoreProyeccionRequest extends FormRequest
             'id_resolucion.integer' => 'La resolución debe ser un número entero.',
             'id_resolucion.exists' => 'La resolución seleccionada no existe.',
         ];
-    }
-
-    protected function failedValidation(Validator $validator): void
-    {
-        throw new HttpResponseException(response()->json([
-            'message' => 'Los datos proporcionados no son válidos.',
-            'errors' => $validator->errors(),
-        ], 422));
     }
 }

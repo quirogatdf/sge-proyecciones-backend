@@ -4,17 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
-
-final class UpdateResolucionRequest extends FormRequest
+final class UpdateResolucionRequest extends ApiRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
         return [
@@ -41,13 +32,5 @@ final class UpdateResolucionRequest extends FormRequest
             'url.url' => 'La URL debe tener un formato válido.',
             'url.max' => 'La URL no puede exceder los 2048 caracteres.',
         ];
-    }
-
-    protected function failedValidation(Validator $validator): void
-    {
-        throw new HttpResponseException(response()->json([
-            'message' => 'Los datos proporcionados no son válidos.',
-            'errors' => $validator->errors(),
-        ], 422));
     }
 }

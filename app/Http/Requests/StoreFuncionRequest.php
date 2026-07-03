@@ -4,17 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
-
-final class StoreFuncionRequest extends FormRequest
+final class StoreFuncionRequest extends ApiRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
         return [
@@ -35,13 +26,5 @@ final class StoreFuncionRequest extends FormRequest
             'observacion.string' => 'La observación debe ser una cadena de texto.',
             'observacion.max' => 'La observación no puede exceder los 1000 caracteres.',
         ];
-    }
-
-    protected function failedValidation(Validator $validator): void
-    {
-        throw new HttpResponseException(response()->json([
-            'message' => 'Los datos proporcionados no son válidos.',
-            'errors' => $validator->errors(),
-        ], 422));
     }
 }

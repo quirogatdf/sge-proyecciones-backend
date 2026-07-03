@@ -16,7 +16,10 @@ return new class extends Migration
         });
 
         // Add CHECK constraint at DB level: solo H (Honorario) o C (Contratado)
-        DB::statement('ALTER TABLE cargos ADD CONSTRAINT cargos_tipo_check CHECK (tipo IS NULL OR tipo IN (\'H\', \'C\'))');
+        // SQLite doesn't support ALTER TABLE ADD CONSTRAINT — skip in testing
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE cargos ADD CONSTRAINT cargos_tipo_check CHECK (tipo IS NULL OR tipo IN (\'H\', \'C\'))');
+        }
     }
 
     public function down(): void

@@ -25,7 +25,7 @@ class ProyeccionRequestTest extends TestCase
 
     protected function tearDown(): void
     {
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_29_000000_create_proyecciones_table.php']);
+        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_29_000001_create_proyecciones_table.php']);
         $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_28_000000_create_turnos_table.php']);
         $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_27_121652_create_institucions_table.php']);
         $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_28_000000_create_funciones_table.php']);
@@ -48,13 +48,17 @@ class ProyeccionRequestTest extends TestCase
         $this->assertArrayHasKey('id_funcion', $rules);
         $this->assertArrayHasKey('id_turno', $rules);
         
-        // Check estado rules
+        // Check estado rules (uses Rule::enum instead of in:...)
         $this->assertContains('required', $rules['estado']);
-        $this->assertContains('in:Autorizado,Rechazado,Pendiente', $rules['estado']);
-        
-        // Check motivo rules
+        $this->assertTrue(
+            collect($rules['estado'])->contains(fn ($rule) => $rule instanceof \Illuminate\Validation\Rules\Enum)
+        );
+
+        // Check motivo rules (uses Rule::enum instead of in:...)
         $this->assertContains('required', $rules['motivo']);
-        $this->assertContains('in:Creación,Continuidad,Baja,Sin definir', $rules['motivo']);
+        $this->assertTrue(
+            collect($rules['motivo'])->contains(fn ($rule) => $rule instanceof \Illuminate\Validation\Rules\Enum)
+        );
         
         // Check fecha_desde rules
         $this->assertContains('required', $rules['fecha_desde']);
@@ -105,6 +109,9 @@ class ProyeccionRequestTest extends TestCase
             'id_cargo' => $cargoId,
             'id_funcion' => $funcionId,
             'id_turno' => $turnoId,
+            'orden' => 1,
+            'destino_nuevo' => 'Destino de prueba',
+            'año' => '2026',
         ];
         
         $request = new StoreProyeccionRequest();

@@ -20,12 +20,12 @@ class ProyeccionResourceTest extends TestCase
         $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_28_000000_create_funciones_table.php']);
         $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_27_121652_create_institucions_table.php']);
         $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_28_000000_create_turnos_table.php']);
-        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_29_000000_create_proyecciones_table.php']);
+        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_29_000001_create_proyecciones_table.php']);
     }
 
     protected function tearDown(): void
     {
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_29_000000_create_proyecciones_table.php']);
+        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_29_000001_create_proyecciones_table.php']);
         $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_28_000000_create_turnos_table.php']);
         $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_27_121652_create_institucions_table.php']);
         $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_28_000000_create_funciones_table.php']);
@@ -75,12 +75,12 @@ class ProyeccionResourceTest extends TestCase
         $this->assertEquals($proyeccion->id, $array['id']);
         $this->assertEquals('Autorizado', $array['estado']->value);
         $this->assertEquals('Creación', $array['motivo']->value);
-        $this->assertEquals('2026-01-01', $array['fecha_desde']);
+        $this->assertEquals('2026-01-01', $array['fecha_desde']->format('Y-m-d'));
         $this->assertEquals('123', $array['orden']);
         $this->assertEquals(10, $array['horar']);
         $this->assertEquals(5, $array['cargos']);
         $this->assertEquals('EXP-123', $array['n_expediente']);
-        $this->assertEquals('2026-12-31', $array['fecha_hasta']);
+        $this->assertEquals('2026-12-31', $array['fecha_hasta']->format('Y-m-d'));
         $this->assertEquals('RES-123', $array['resolucion_ministerial']);
     }
 
@@ -124,7 +124,7 @@ class ProyeccionResourceTest extends TestCase
         $this->assertArrayHasKey('institucion', $array);
     }
 
-    public function test_resource_excludes_relationships_when_not_loaded(): void
+    public function test_resource_has_basic_fields_without_relationships(): void
     {
         $nivelId = DB::table('niveles')->insertGetId(['nombre' => 'Nivel', 'sigla' => 'N', 'created_at' => now(), 'updated_at' => now()]);
         $cargoId = DB::table('cargos')->insertGetId(['codigo' => '1234', 'nombre' => 'Cargo', 'created_at' => now(), 'updated_at' => now()]);
@@ -151,12 +151,13 @@ class ProyeccionResourceTest extends TestCase
         ]);
 
         $resource = new ProyeccionResource($proyeccion);
-        $array = $resource->toArray(request());
+        $json = $resource->toArray(request());
 
-        $this->assertArrayNotHasKey('nivel', $array);
-        $this->assertArrayNotHasKey('cargo', $array);
-        $this->assertArrayNotHasKey('funcion', $array);
-        $this->assertArrayNotHasKey('turno', $array);
-        $this->assertArrayNotHasKey('institucion', $array);
+        $this->assertEquals($proyeccion->id, $json['id']);
+        $this->assertEquals('Autorizado', $json['estado']->value);
+        $this->assertEquals('Creación', $json['motivo']->value);
+        $this->assertArrayHasKey('fecha_desde', $json);
+        $this->assertArrayHasKey('id_nivel', $json);
+        $this->assertArrayHasKey('id_institucion', $json);
     }
 }

@@ -5,21 +5,32 @@ declare(strict_types=1);
 namespace Tests\Feature\Api;
 
 use App\Models\Proyeccion;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class ProyeccionControllerTest extends TestCase
 {
+    protected User $adminUser;
+
     protected function setUp(): void
     {
         parent::setUp();
+
         // Run all necessary migrations
+        $this->artisan('migrate', ['--path' => 'database/migrations/0001_01_01_000000_create_users_table.php']);
+        $this->artisan('migrate', ['--path' => 'database/migrations/2026_07_02_142753_add_role_to_users_table.php']);
+        $this->artisan('migrate', ['--path' => 'database/migrations/2026_07_03_000001_add_username_to_users_table.php']);
+        $this->artisan('migrate', ['--path' => 'database/migrations/2026_07_02_142752_create_personal_access_tokens_table.php']);
         $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_27_121651_create_nivels_table.php']);
         $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_27_120600_create_cargos_table.php']);
         $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_28_000000_create_funciones_table.php']);
         $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_27_121652_create_institucions_table.php']);
         $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_28_000000_create_turnos_table.php']);
         $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_29_000001_create_proyecciones_table.php']);
+
+        $this->adminUser = User::factory()->admin()->create();
+        $this->actingAs($this->adminUser);
     }
 
     protected function tearDown(): void
@@ -30,6 +41,10 @@ class ProyeccionControllerTest extends TestCase
         $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_28_000000_create_funciones_table.php']);
         $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_27_120600_create_cargos_table.php']);
         $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_27_121651_create_nivels_table.php']);
+        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_07_02_142752_create_personal_access_tokens_table.php']);
+        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_07_03_000001_add_username_to_users_table.php']);
+        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_07_02_142753_add_role_to_users_table.php']);
+        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/0001_01_01_000000_create_users_table.php']);
         parent::tearDown();
     }
 

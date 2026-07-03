@@ -4,18 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-final class UpdateCargoRequest extends FormRequest
+final class UpdateCargoRequest extends ApiRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
         $cargoId = $this->route('cargo');
@@ -42,13 +34,5 @@ final class UpdateCargoRequest extends FormRequest
             'descripcion.max' => 'La descripción no puede exceder los 500 caracteres.',
             'tipo.in' => 'El tipo debe ser H (Honorario) o C (Contratado).',
         ];
-    }
-
-    protected function failedValidation(Validator $validator): void
-    {
-        throw new HttpResponseException(response()->json([
-            'message' => 'Los datos proporcionados no son válidos.',
-            'errors' => $validator->errors(),
-        ], 422));
     }
 }

@@ -4,22 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-final class UpdateInstitucionRequest extends FormRequest
+final class UpdateInstitucionRequest extends ApiRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
         $institucionId = $this->route('institucion');
-        
+
         return [
             'nombre' => ['sometimes', 'required', 'string', 'max:255'],
             'localidad' => ['sometimes', 'required', 'in:Rio Grande,Ushuaia,Tolhuin'],
@@ -42,17 +34,8 @@ final class UpdateInstitucionRequest extends FormRequest
             'cuise.required' => 'El CUISE es obligatorio.',
             'cuise.string' => 'El CUISE debe ser una cadena de texto.',
             'cuise.max' => 'El CUISE no puede tener más de 4 caracteres.',
-            // 'cuise.unique' => 'El CUISE ya está registrado en otra institución.',
             'anexo.string' => 'El anexo debe ser una cadena de texto.',
             'anexo.max' => 'El anexo no puede exceder los 20 caracteres.',
         ];
-    }
-
-    protected function failedValidation(Validator $validator): void
-    {
-        throw new HttpResponseException(response()->json([
-            'message' => 'Los datos proporcionados no son válidos.',
-            'errors' => $validator->errors(),
-        ], 422));
     }
 }

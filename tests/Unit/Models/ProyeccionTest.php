@@ -42,6 +42,8 @@ class ProyeccionTest extends TestCase
             'id_nivel', 'estado', 'n_expediente', 'motivo', 'orden', 'horar', 'cargos',
             'id_cargo', 'id_funcion', 'id_turno', 'fecha_desde', 'fecha_hasta', 'id_institucion',
             'resolucion_ministerial', 'resolucion_ministerial_ext', 'disposicion_sgnij', 'rect_disposoco_sgnij',
+            'año', 'id_puesto', 'resolucion_ministerial_rect1', 'resolucion_ministerial_rect2',
+            'resolucion_previa_continuidad', 'destino_anterior', 'destino_nuevo', 'id_resolucion',
         ];
         
         $this->assertEquals($expectedFillable, $proyeccion->getFillable());
