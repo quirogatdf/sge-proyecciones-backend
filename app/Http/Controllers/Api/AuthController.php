@@ -6,9 +6,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\UpdatePasswordRequest;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Sanctum\Exceptions\MissingAbilityException;
 
 final class AuthController extends Controller
 {
@@ -20,7 +21,7 @@ final class AuthController extends Controller
             ], 401);
         }
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         $token = $user->createToken('auth-token')->plainTextToken;
@@ -42,7 +43,7 @@ final class AuthController extends Controller
 
     public function me(): JsonResponse
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         return response()->json([
@@ -57,12 +58,24 @@ final class AuthController extends Controller
 
     public function logout(): JsonResponse
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
         $user->currentAccessToken()->delete();
 
         return response()->json([
             'message' => 'Sesión cerrada exitosamente',
+        ]);
+    }
+
+    public function updatePassword(UpdatePasswordRequest $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = User::findOrFail($request->validated('user_id'));
+        $user->password = $request->validated('password');
+        $user->save();
+
+        return response()->json([
+            'message' => 'Contraseña actualizada exitosamente',
         ]);
     }
 }
