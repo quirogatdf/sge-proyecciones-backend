@@ -37,8 +37,11 @@ final class ProyeccionController extends Controller
         if ($request->filled('search')) {
             $search = $request->string('search');
             $query->where(function ($q) use ($search) {
-                $q->where('id', $search)
-                    ->orWhere('estado', 'LIKE', "%{$search}%")
+                if (is_numeric($search)) {
+                    $q->where('id', (int) $search);
+                }
+
+                $q->orWhere('estado', 'LIKE', "%{$search}%")
                     ->orWhere('motivo', 'LIKE', "%{$search}%")
                     ->orWhere('destino_nuevo', 'LIKE', "%{$search}%")
                     ->orWhere('resolucion_ministerial', 'LIKE', "%{$search}%")
@@ -153,8 +156,11 @@ final class ProyeccionController extends Controller
         if ($request->filled('search')) {
             $search = $request->string('search');
             $query->where(function ($q) use ($search) {
-                $q->where('id', $search)
-                    ->orWhere('estado', 'LIKE', "%{$search}%")
+                if (is_numeric($search)) {
+                    $q->where('id', (int) $search);
+                }
+
+                $q->orWhere('estado', 'LIKE', "%{$search}%")
                     ->orWhere('motivo', 'LIKE', "%{$search}%")
                     ->orWhere('destino_nuevo', 'LIKE', "%{$search}%")
                     ->orWhere('resolucion_ministerial', 'LIKE', "%{$search}%")
