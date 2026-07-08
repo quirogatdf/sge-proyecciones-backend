@@ -41,20 +41,20 @@ final class ProyeccionController extends Controller
                     $q->where('id', (int) $search);
                 }
 
-                $q->orWhere('estado', 'LIKE', "%{$search}%")
-                    ->orWhere('motivo', 'LIKE', "%{$search}%")
-                    ->orWhere('destino_nuevo', 'LIKE', "%{$search}%")
-                    ->orWhere('resolucion_ministerial', 'LIKE', "%{$search}%")
-                    ->orWhere('n_expediente', 'LIKE', "%{$search}%")
-                    ->orWhere('id_puesto', 'LIKE', "%{$search}%")
-                    ->orWhere('año', 'LIKE', "%{$search}%")
+                $q->orWhere('estado', 'ILIKE', "%{$search}%")
+                    ->orWhere('motivo', 'ILIKE', "%{$search}%")
+                    ->orWhere('destino_nuevo', 'ILIKE', "%{$search}%")
+                    ->orWhere('resolucion_ministerial', 'ILIKE', "%{$search}%")
+                    ->orWhere('n_expediente', 'ILIKE', "%{$search}%")
+                    ->orWhere('id_puesto', 'ILIKE', "%{$search}%")
+                    ->orWhere('año', 'ILIKE', "%{$search}%")
                     ->orWhereHas('institucion', function ($q) use ($search) {
-                        $q->where('nombre', 'LIKE', "%{$search}%")
-                            ->orWhere('localidad', 'LIKE', "%{$search}%");
+                        $q->where('nombre', 'ILIKE', "%{$search}%")
+                            ->orWhere('localidad', 'ILIKE', "%{$search}%");
                     })
                     ->orWhereHas('cargo', function ($q) use ($search) {
-                        $q->where('nombre', 'LIKE', "%{$search}%")
-                            ->orWhere('codigo', 'LIKE', "%{$search}%");
+                        $q->where('nombre', 'ILIKE', "%{$search}%")
+                            ->orWhere('codigo', 'ILIKE', "%{$search}%");
                     });
             });
         }
@@ -160,20 +160,20 @@ final class ProyeccionController extends Controller
                     $q->where('id', (int) $search);
                 }
 
-                $q->orWhere('estado', 'LIKE', "%{$search}%")
-                    ->orWhere('motivo', 'LIKE', "%{$search}%")
-                    ->orWhere('destino_nuevo', 'LIKE', "%{$search}%")
-                    ->orWhere('resolucion_ministerial', 'LIKE', "%{$search}%")
-                    ->orWhere('n_expediente', 'LIKE', "%{$search}%")
-                    ->orWhere('id_puesto', 'LIKE', "%{$search}%")
-                    ->orWhere('año', 'LIKE', "%{$search}%")
+                $q->orWhere('estado', 'ILIKE', "%{$search}%")
+                    ->orWhere('motivo', 'ILIKE', "%{$search}%")
+                    ->orWhere('destino_nuevo', 'ILIKE', "%{$search}%")
+                    ->orWhere('resolucion_ministerial', 'ILIKE', "%{$search}%")
+                    ->orWhere('n_expediente', 'ILIKE', "%{$search}%")
+                    ->orWhere('id_puesto', 'ILIKE', "%{$search}%")
+                    ->orWhere('año', 'ILIKE', "%{$search}%")
                     ->orWhereHas('institucion', function ($q) use ($search) {
-                        $q->where('nombre', 'LIKE', "%{$search}%")
-                            ->orWhere('localidad', 'LIKE', "%{$search}%");
+                        $q->where('nombre', 'ILIKE', "%{$search}%")
+                            ->orWhere('localidad', 'ILIKE', "%{$search}%");
                     })
                     ->orWhereHas('cargo', function ($q) use ($search) {
-                        $q->where('nombre', 'LIKE', "%{$search}%")
-                            ->orWhere('codigo', 'LIKE', "%{$search}%");
+                        $q->where('nombre', 'ILIKE', "%{$search}%")
+                            ->orWhere('codigo', 'ILIKE', "%{$search}%");
                     });
             });
         }
