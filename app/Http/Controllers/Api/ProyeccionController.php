@@ -16,14 +16,48 @@ final class ProyeccionController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * Supports:
+     * - ?search=term  (searches across estado, motivo, destino_nuevo, institucion.nombre, cargo.nombre)
+     * - ?page=N       (default: 1)
+     * - ?per_page=N   (default: 25)
+     * - ?id_nivel=N   (filter by nivel)
+     *
      * @return JsonResponse
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $proyecciones = Proyeccion::with(['nivel', 'cargo', 'funcion', 'turno', 'institucion'])->get();
+        $query = Proyeccion::with(['nivel', 'cargo', 'institucion']);
+
+        // Filtro por nivel (compatibilidad con el filtro existente)
+        if ($request->filled('id_nivel')) {
+            $query->where('id_nivel', $request->integer('id_nivel'));
+        }
+
+        // Búsqueda server-side
+        if ($request->filled('search')) {
+            $search = $request->string('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('estado', 'LIKE', "%{$search}%")
+                    ->orWhere('motivo', 'LIKE', "%{$search}%")
+                    ->orWhere('destino_nuevo', 'LIKE', "%{$search}%")
+                    ->orWhere('resolucion_ministerial', 'LIKE', "%{$search}%")
+                    ->orWhere('año', 'LIKE', "%{$search}%")
+                    ->orWhereHas('institucion', fn($q) => $q->where('nombre', 'LIKE', "%{$search}%"))
+                    ->orWhereHas('cargo', fn($q) => $q->where('nombre', 'LIKE', "%{$search}%"));
+            });
+        }
+
+        $perPage = min($request->integer('per_page', 25), 100);
+        $proyecciones = $query->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json([
-            'data' => ProyeccionResource::collection($proyecciones),
+            'data' => ProyeccionResource::collection($proyecciones->items()),
+            'meta' => [
+                'current_page' => $proyecciones->currentPage(),
+                'last_page' => $proyecciones->lastPage(),
+                'per_page' => $proyecciones->perPage(),
+                'total' => $proyecciones->total(),
+            ],
         ]);
     }
 
@@ -101,14 +135,34 @@ final class ProyeccionController extends Controller
      * @param int $idNivel
      * @return JsonResponse
      */
-    public function byNivel(int $idNivel): JsonResponse
+    public function byNivel(int $idNivel, Request $request): JsonResponse
     {
-        $proyecciones = Proyeccion::with(['nivel', 'cargo', 'funcion', 'turno', 'institucion'])
-            ->where('id_nivel', $idNivel)
-            ->get();
+        $query = Proyeccion::with(['nivel', 'cargo', 'institucion'])
+            ->where('id_nivel', $idNivel);
+
+        // Búsqueda server-side
+        if ($request->filled('search')) {
+            $search = $request->string('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('estado', 'LIKE', "%{$search}%")
+                    ->orWhere('motivo', 'LIKE', "%{$search}%")
+                    ->orWhere('destino_nuevo', 'LIKE', "%{$search}%")
+                    ->orWhereHas('institucion', fn($q) => $q->where('nombre', 'LIKE', "%{$search}%"))
+                    ->orWhereHas('cargo', fn($q) => $q->where('nombre', 'LIKE', "%{$search}%"));
+            });
+        }
+
+        $perPage = min($request->integer('per_page', 25), 100);
+        $proyecciones = $query->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json([
-            'data' => ProyeccionResource::collection($proyecciones),
+            'data' => ProyeccionResource::collection($proyecciones->items()),
+            'meta' => [
+                'current_page' => $proyecciones->currentPage(),
+                'last_page' => $proyecciones->lastPage(),
+                'per_page' => $proyecciones->perPage(),
+                'total' => $proyecciones->total(),
+            ],
         ]);
     }
 
