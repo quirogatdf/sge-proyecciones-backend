@@ -13,11 +13,12 @@ WORKDIR /var/www
 
 COPY . .
 
-# Create .env from example if not exists, then generate app key
+# Install dependencies (generates autoload)
+RUN composer install --optimize-autoloader --no-dev --no-interaction
+
+# Create .env if missing and generate app key
 RUN cp -n .env.example .env 2>/dev/null || true
 RUN php artisan key:generate --force
-
-RUN composer dump-autoload --optimize
 
 EXPOSE ${PORT:-8000}
 
