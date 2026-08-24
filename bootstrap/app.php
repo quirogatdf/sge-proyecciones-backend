@@ -21,9 +21,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // API-only app: always return JSON 401 on auth failure instead of
-        // redirecting to a non-existent named 'login' route (which 500s).
+        // API-only: SIEMPRE JSON 401 en auth fallida, sin importar headers.
+        // Esto evita el fallback a route('login') en Handler::unauthenticated().
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
             return response()->json(['message' => 'No autenticado.'], 401);
         });
+    })
+    ->booted(function (): void {
+        // Evitar que Authenticate::redirectTo() explote con route('login') inexistente.
+        \Illuminate\Auth\Middleware\Authenticate::redirectUsing(
+            fn (\Illuminate\Http\Request $request) => null
+        );
     })->create();
