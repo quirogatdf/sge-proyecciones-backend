@@ -1,5 +1,5 @@
-[phases.setup]
-nixPkgs = ["php84", "php84Extensions.gd", "php84Extensions.pgsql", "php84Extensions.pdo_pgsql", "php84Extensions.zip", "php84Extensions.mbstring", "php84Extensions.bcmath", "php84Extensions.exif", "php84Extensions.pcntl", "composer"]
+[variables]
+PHP_EXTENSIONS = "gd pgsql pdo_pgsql zip mbstring bcmath exif pcntl"
 
 [phases.build]
 cmds = [
