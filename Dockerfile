@@ -22,6 +22,21 @@ RUN php artisan key:generate --force
 # Fix storage permissions
 RUN chmod -R 775 storage bootstrap/cache
 
-EXPOSE 8080
+# Startup script with logging
+RUN cat > /start.sh <<'EOF'
+#!/bin/bash
+echo "=== Container starting ==="
+echo "PORT env: ${PORT:-NOT SET}"
+echo "Listening on: 0.0.0.0:${PORT:-8080}"
 
-CMD ["sh", "-c", "php -S 0.0.0.0:8080 server.php"]
+# Test if php can serve a simple file
+php -r "echo 'PHP version: ' . phpversion() . PHP_EOL;"
+
+# Start PHP built-in server in foreground
+exec php -S 0.0.0.0:${PORT:-8080} server.php
+EOF
+RUN chmod +x /start.sh
+
+EXPOSE ${PORT:-8080}
+
+CMD ["/start.sh"]
