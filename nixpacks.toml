@@ -1,9 +1,9 @@
 [variables]
-PHP_EXTENSIONS = "gd pgsql pdo_pgsql zip mbstring bcmath exif pcntl"
+PHP_EXTENSIONS = "gd"
 
 [phases.build]
 cmds = [
-  "composer install --no-dev --optimize-autoloader --no-interaction",
+  "composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=ext-gd",
   "printf 'APP_KEY=\n' > .env",
   "php artisan key:generate --force || true"
 ]
