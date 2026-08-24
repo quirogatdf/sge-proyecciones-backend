@@ -4,6 +4,6 @@ PHP_EXTENSIONS = "gd pgsql pdo_pgsql zip mbstring bcmath exif pcntl"
 [phases.build]
 cmds = [
   "composer install --no-dev --optimize-autoloader --no-interaction",
-  "cp -n .env.example .env 2>/dev/null || true",
+  "printf 'APP_KEY=\n' > .env",
   "php artisan key:generate --force || true"
 ]
