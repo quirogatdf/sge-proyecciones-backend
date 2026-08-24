@@ -20,6 +20,9 @@ RUN composer install --optimize-autoloader --no-dev --no-interaction
 RUN cp -n .env.example .env 2>/dev/null || true
 RUN php artisan key:generate --force
 
-EXPOSE ${PORT:-8000}
+# Fix storage permissions
+RUN chmod -R 775 storage bootstrap/cache
 
-CMD php -S 0.0.0.0:${PORT:-8000} -t public public/index.php
+EXPOSE 8000
+
+CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=$((${PORT:-8000}))"]
