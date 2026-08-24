@@ -22,17 +22,13 @@ RUN php artisan key:generate --force
 # Fix storage permissions
 RUN chmod -R 775 storage bootstrap/cache
 
-# Nginx: listen on PORT env variable (default 8080)
+# Nginx config template (uses PORT env variable via envsubst)
 RUN rm -f /etc/nginx/sites-enabled/default && \
-    cat > /etc/nginx/sites-available/app <<'EOF'
+    cat > /etc/nginx/sites-available/app.conf <<'EOF'
 server {
     listen ${PORT:-8080};
     server_name _;
     root /var/www/public;
-
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
 
     index index.php;
 
@@ -52,8 +48,17 @@ server {
     }
 }
 EOF
-RUN ln -sf /etc/nginx/sites-available/app /etc/nginx/sites-enabled/app
+
+# Startup script that generates nginx config with correct PORT
+RUN cat > /start.sh <<'EOF'
+#!/bin/bash
+export PORT=${PORT:-8080}
+envsubst '${PORT}' < /etc/nginx/sites-available/app.conf > /etc/nginx/sites-enabled/app.conf
+service php8.4-fpm start
+nginx -g 'daemon off;'
+EOF
+RUN chmod +x /start.sh
 
 EXPOSE ${PORT:-8080}
 
-CMD service php8.4-fpm start && nginx -g 'daemon off;'
+CMD ["/start.sh"]
