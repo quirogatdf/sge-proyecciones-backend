@@ -1,9 +1,0 @@
-[phases.setup]
-nixPkgs = ["php84", "php84Extensions.gd", "php84Extensions.pgsql", "composer", "unzip"]
-
-[phases.build]
-cmds = [
-  "composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=ext-gd",
-  "printf 'APP_KEY=\n' > .env",
-  "php artisan key:generate --force || true"
-]
