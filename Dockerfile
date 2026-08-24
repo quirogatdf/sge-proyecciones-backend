@@ -22,7 +22,7 @@ RUN php artisan key:generate --force
 # Fix storage permissions
 RUN chmod -R 775 storage bootstrap/cache
 
-# Nginx config template with PORT variable
+# Nginx config with port 8000
 RUN rm -f /etc/nginx/sites-enabled/default && \
     cat > /etc/nginx/conf.d/app.conf <<'EOF'
 server {
@@ -49,17 +49,21 @@ server {
 }
 EOF
 
-# Startup script
+# Startup script with logging
 RUN cat > /start.sh <<'EOF'
 #!/bin/bash
-# Ensure log directories exist
-mkdir -p /run/php /var/log/nginx /var/lib/nginx
-chown -R www-data:www-data /run/php /var/log/nginx /var/lib/nginx
+set -e
 
-# Start php-fpm
-php-fpm8.4 -D
+echo "=== Starting PHP-FPM ==="
+mkdir -p /run/php
+php-fpm8.4 -D -F /usr/local/etc/php-fpm.conf || php-fpm8.4 -D
+echo "PHP-FPM started, socket check:"
+ls -la /run/php/ || echo "No socket directory"
 
-# Start nginx
+echo "=== Testing nginx config ==="
+nginx -t
+
+echo "=== Starting nginx ==="
 nginx -g 'daemon off;'
 EOF
 RUN chmod +x /start.sh
