@@ -26,7 +26,7 @@ RUN chmod -R 775 storage bootstrap/cache
 RUN rm -f /etc/nginx/sites-enabled/default && \
     cat > /etc/nginx/sites-available/app.conf <<'EOF'
 server {
-    listen ${PORT:-8080};
+    listen ${PORT:-8000};
     server_name _;
     root /var/www/public;
 
@@ -52,13 +52,14 @@ EOF
 # Startup script that generates nginx config with correct PORT
 RUN cat > /start.sh <<'EOF'
 #!/bin/bash
-export PORT=${PORT:-8080}
+export PORT=${PORT:-8000}
 envsubst '${PORT}' < /etc/nginx/sites-available/app.conf > /etc/nginx/sites-enabled/app.conf
+echo "Starting nginx on port $PORT"
 service php8.4-fpm start
 nginx -g 'daemon off;'
 EOF
 RUN chmod +x /start.sh
 
-EXPOSE ${PORT:-8080}
+EXPOSE ${PORT:-8000}
 
 CMD ["/start.sh"]
