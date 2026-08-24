@@ -22,6 +22,6 @@ RUN php artisan key:generate --force
 # Fix storage permissions
 RUN chmod -R 775 storage bootstrap/cache
 
-EXPOSE ${PORT:-8000}
+EXPOSE 8080
 
-CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-8000} server.php"]
+CMD ["sh", "-c", "php -S 0.0.0.0:8080 server.php"]
