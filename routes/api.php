@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\TurnoController;
 use App\Http\Controllers\Api\FuncionController;
 use App\Http\Controllers\Api\InstitucionController;
 use App\Http\Controllers\Api\ProyeccionController;
+use App\Http\Controllers\Api\ProyeccionExportController;
 use App\Http\Controllers\Api\ResolucionController;
 
 Route::post('login', [AuthController::class, 'login']);
@@ -25,6 +26,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::apiResource('funciones', FuncionController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
     Route::apiResource('instituciones', InstitucionController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
     Route::apiResource('resoluciones', ResolucionController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+    Route::get('proyecciones/export', [ProyeccionExportController::class, 'export']);
     Route::get('proyecciones/stats/by-institucion', [ProyeccionController::class, 'statsByInstitucion']);
     Route::get('proyecciones/nivel/{idNivel}', [ProyeccionController::class, 'byNivel']);
     Route::apiResource('proyecciones', ProyeccionController::class);

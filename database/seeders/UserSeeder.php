@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\RolUsuario;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
@@ -18,7 +19,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Administrador',
                 'username' => 'admin',
-                'password' => 'admin123',
+                'password' => Hash::make('admin123'),
                 'role' => RolUsuario::Admin,
             ]
         );
@@ -28,7 +29,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Invitado',
                 'username' => 'guest',
-                'password' => 'guest123',
+                'password' => Hash::make('guest123'),
                 'role' => RolUsuario::Guest,
             ]
         );
