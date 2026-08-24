@@ -1,0 +1,9 @@
+[phases.setup]
+nixPkgs = ["php84", "php84Extensions.gd", "php84Extensions.pgsql", "php84Extensions.pdo_pgsql", "php84Extensions.zip", "php84Extensions.mbstring", "php84Extensions.bcmath", "php84Extensions.exif", "php84Extensions.pcntl", "composer"]
+
+[phases.build]
+cmds = [
+  "composer install --no-dev --optimize-autoloader --no-interaction",
+  "cp -n .env.example .env 2>/dev/null || true",
+  "php artisan key:generate --force || true"
+]
