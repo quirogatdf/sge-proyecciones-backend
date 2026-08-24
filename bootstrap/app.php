@@ -21,5 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // API-only app: always return JSON 401 on auth failure instead of
+        // redirecting to a non-existent named 'login' route (which 500s).
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+            return response()->json(['message' => 'No autenticado.'], 401);
+        });
     })->create();
