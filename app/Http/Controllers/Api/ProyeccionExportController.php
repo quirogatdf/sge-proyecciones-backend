@@ -32,7 +32,7 @@ final class ProyeccionExportController extends Controller
     public function export(Request $request)
     {
         $validated = $request->validate([
-            'motivo'          => 'nullable|string|in:Continuidad,Creacion',
+            'motivo'          => 'nullable|string|in:Continuidad,Creacion,Creación',
             'id_nivel'        => 'nullable|integer|exists:niveles,id',
             'id_institucion'  => 'nullable|integer|exists:instituciones,id',
             'id_cargo'        => 'nullable|integer|exists:cargos,id',
@@ -42,7 +42,7 @@ final class ProyeccionExportController extends Controller
         try {
             $data = $this->exportService->getExportData($validated);
 
-            $filename = $this->buildFilename($validated['motivo'] ?? 'Continuidad');
+            $filename = $this->buildFilename($validated['motivo'] ?? 'todos');
 
             return Excel::download(
                 new ProyeccionExport($data['records'], $this->exportService),

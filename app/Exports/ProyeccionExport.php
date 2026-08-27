@@ -44,6 +44,7 @@ final class ProyeccionExport implements FromCollection, WithHeadings, WithMappin
     {
         return [
             'Orden',
+            'Institucion',
             'Cantidad',
             'Codigo',
             'Denominacion',

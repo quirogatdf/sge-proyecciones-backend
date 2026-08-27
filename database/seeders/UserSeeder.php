@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::updateOrCreate(
+        User::firstOrCreate(
             ['email' => 'admin@sge.gob.ar'],
             [
                 'name' => 'Administrador',
@@ -24,7 +24,7 @@ class UserSeeder extends Seeder
             ]
         );
 
-        User::updateOrCreate(
+        User::firstOrCreate(
             ['email' => 'guest@sge.gob.ar'],
             [
                 'name' => 'Invitado',
