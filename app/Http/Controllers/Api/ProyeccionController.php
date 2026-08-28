@@ -26,7 +26,7 @@ final class ProyeccionController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Proyeccion::with(['nivel', 'cargo', 'institucion']);
+        $query = Proyeccion::with(['nivel', 'cargo', 'institucion', 'resolucion']);
 
         // Filtro por nivel (compatibilidad con el filtro existente)
         if ($request->filled('id_nivel')) {
@@ -55,6 +55,9 @@ final class ProyeccionController extends Controller
                     ->orWhereHas('cargo', function ($q) use ($search) {
                         $q->where('nombre', 'ILIKE', "%{$search}%")
                             ->orWhere('codigo', 'ILIKE', "%{$search}%");
+                    })
+                    ->orWhereHas('resolucion', function ($q) use ($search) {
+                        $q->where('nombre', 'ILIKE', "%{$search}%");
                     });
             });
         }
@@ -81,7 +84,7 @@ final class ProyeccionController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $proyeccion = Proyeccion::with(['nivel', 'cargo', 'funcion', 'turno', 'institucion'])
+        $proyeccion = Proyeccion::with(['nivel', 'cargo', 'funcion', 'turno', 'institucion', 'resolucion'])
             ->findOrFail($id);
 
         return response()->json([
@@ -99,7 +102,7 @@ final class ProyeccionController extends Controller
     {
         $proyeccion = Proyeccion::create($request->validated());
 
-        $proyeccion->load(['nivel', 'cargo', 'funcion', 'turno', 'institucion']);
+        $proyeccion->load(['nivel', 'cargo', 'funcion', 'turno', 'institucion', 'resolucion']);
 
         return response()->json([
             'data' => new ProyeccionResource($proyeccion),
@@ -119,7 +122,7 @@ final class ProyeccionController extends Controller
         $proyeccion = Proyeccion::findOrFail($id);
         $proyeccion->update($request->validated());
 
-        $proyeccion->load(['nivel', 'cargo', 'funcion', 'turno', 'institucion']);
+        $proyeccion->load(['nivel', 'cargo', 'funcion', 'turno', 'institucion', 'resolucion']);
 
         return response()->json([
             'data' => new ProyeccionResource($proyeccion),
@@ -149,7 +152,7 @@ final class ProyeccionController extends Controller
      */
     public function byNivel(int $idNivel, Request $request): JsonResponse
     {
-        $query = Proyeccion::with(['nivel', 'cargo', 'institucion'])
+        $query = Proyeccion::with(['nivel', 'cargo', 'institucion', 'resolucion'])
             ->where('id_nivel', $idNivel);
 
         // Búsqueda server-side
@@ -174,6 +177,9 @@ final class ProyeccionController extends Controller
                     ->orWhereHas('cargo', function ($q) use ($search) {
                         $q->where('nombre', 'ILIKE', "%{$search}%")
                             ->orWhere('codigo', 'ILIKE', "%{$search}%");
+                    })
+                    ->orWhereHas('resolucion', function ($q) use ($search) {
+                        $q->where('nombre', 'ILIKE', "%{$search}%");
                     });
             });
         }

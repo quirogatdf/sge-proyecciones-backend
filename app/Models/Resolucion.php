@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Resolucion extends Model
 {
@@ -25,5 +26,10 @@ final class Resolucion extends Model
         return [
             'año' => 'integer',
         ];
+    }
+
+    public function proyecciones(): HasMany
+    {
+        return $this->hasMany(Proyeccion::class, 'id_resolucion');
     }
 }
