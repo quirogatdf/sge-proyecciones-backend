@@ -19,6 +19,7 @@ final class ProyeccionExportService
      *   id_nivel?: int,
      *   id_institucion?: int,
      *   id_cargo?: int,
+     *   id_resolucion?: int,
      *   anio?: string,
      * } $filters
      * @return array{records: Collection, total: int}
@@ -47,6 +48,9 @@ final class ProyeccionExportService
         }
         if (! empty($filters['anio'])) {
             $query->where('año', $filters['anio']);
+        }
+        if (! empty($filters['id_resolucion'])) {
+            $query->where('id_resolucion', $filters['id_resolucion']);
         }
 
         // Check total count before loading

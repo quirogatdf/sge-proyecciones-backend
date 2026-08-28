@@ -26,6 +26,8 @@ final class ProyeccionExportController extends Controller
      *   - id_nivel: int (optional)
      *   - id_institucion: int (optional)
      *   - id_cargo: int (optional)
+     *   - id_resolucion: int (optional)
+     *   - anio: string (optional, 4 chars)
      *
      * @return StreamedResponse|JsonResponse
      */
@@ -36,6 +38,7 @@ final class ProyeccionExportController extends Controller
             'id_nivel'        => 'nullable|integer|exists:niveles,id',
             'id_institucion'  => 'nullable|integer|exists:instituciones,id',
             'id_cargo'        => 'nullable|integer|exists:cargos,id',
+            'id_resolucion'   => 'nullable|integer|exists:resoluciones,id',
             'anio'            => 'nullable|string|size:4',
         ]);
 
