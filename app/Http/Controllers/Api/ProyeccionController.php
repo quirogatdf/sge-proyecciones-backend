@@ -62,8 +62,66 @@ final class ProyeccionController extends Controller
             });
         }
 
+        // Sorting server-side — soporta todas las columnas visibles en el front
+        $allowedSorts = [
+            'id', 'id_nivel', 'localidad', 'nombreInstitucion', 'cantidadDisplay', 'cargoDisplay',
+            'año', 'orden', 'estado', 'motivo', 'resolucionDisplay', 'destino_nuevo', 'id_puesto',
+            // aliases directos (compat)
+            'fecha_desde', 'fecha_hasta', 'n_expediente', 'id_institucion', 'id_cargo', 'id_funcion', 'id_turno', 'id_resolucion', 'horar', 'cargos', 'created_at', 'updated_at'
+        ];
+        $sortBy = $request->string('sort_by')->toString() ?: 'id';
+        if (!in_array($sortBy, $allowedSorts, true)) {
+            $sortBy = 'id';
+        }
+        $sortDir = strtolower($request->string('sort_dir')->toString() ?: 'desc');
+        if (!in_array($sortDir, ['asc', 'desc'], true)) {
+            $sortDir = 'desc';
+        }
+
+        // Joins condicionales para ordenar por relaciones / campos computados
+        $query->select('proyecciones.*');
+        switch ($sortBy) {
+            case 'id_nivel':
+                $query->leftJoin('niveles as nivel_sort', 'nivel_sort.id', '=', 'proyecciones.id_nivel')
+                      ->orderBy('nivel_sort.nombre', $sortDir);
+                break;
+            case 'localidad':
+                $query->leftJoin('instituciones as inst_sort', 'inst_sort.id', '=', 'proyecciones.id_institucion')
+                      ->orderBy('inst_sort.localidad', $sortDir);
+                break;
+            case 'nombreInstitucion':
+                $query->leftJoin('instituciones as inst_sort2', 'inst_sort2.id', '=', 'proyecciones.id_institucion')
+                      ->orderBy('inst_sort2.nombre', $sortDir);
+                break;
+            case 'cargoDisplay':
+                $query->leftJoin('cargos as cargo_sort', 'cargo_sort.id', '=', 'proyecciones.id_cargo')
+                      ->orderBy('cargo_sort.codigo', $sortDir)
+                      ->orderBy('cargo_sort.nombre', $sortDir);
+                break;
+            case 'cantidadDisplay':
+                // Cantidad = horar si >0 sino cargos — ordena por valor computado
+                $query->orderByRaw("COALESCE(NULLIF(proyecciones.horar, 0), proyecciones.cargos, 0) $sortDir");
+                break;
+            case 'resolucionDisplay':
+            case 'id_resolucion':
+                $query->leftJoin('resoluciones as resol_sort', 'resol_sort.id', '=', 'proyecciones.id_resolucion')
+                      ->orderBy('resol_sort.nombre', $sortDir);
+                break;
+            default:
+                // Columnas directas de proyecciones — usar prefijo para evitar ambigüedad tras joins
+                $directColumns = ['id','estado','motivo','año','orden','n_expediente','id_puesto','destino_nuevo','fecha_desde','fecha_hasta','id_institucion','id_cargo','id_funcion','id_turno','horar','cargos','created_at','updated_at'];
+                $column = in_array($sortBy, $directColumns, true) ? "proyecciones.\"$sortBy\"" : "proyecciones.id";
+                // Para 'año' con acento, el quoting con comillas es necesario en Postgres
+                if ($sortBy === 'año') {
+                    $query->orderByRaw('proyecciones."año" ' . $sortDir);
+                } else {
+                    $query->orderByRaw("$column $sortDir");
+                }
+                break;
+        }
+
         $perPage = min($request->integer('per_page', 25), 100);
-        $proyecciones = $query->orderBy('id', 'desc')->paginate($perPage);
+        $proyecciones = $query->paginate($perPage);
 
         return response()->json([
             'data' => ProyeccionResource::collection($proyecciones->items()),
@@ -184,8 +242,61 @@ final class ProyeccionController extends Controller
             });
         }
 
+        // Sorting server-side — soporta todas las columnas visibles en el front
+        $allowedSorts = [
+            'id', 'id_nivel', 'localidad', 'nombreInstitucion', 'cantidadDisplay', 'cargoDisplay',
+            'año', 'orden', 'estado', 'motivo', 'resolucionDisplay', 'destino_nuevo', 'id_puesto',
+            'fecha_desde', 'fecha_hasta', 'n_expediente', 'id_institucion', 'id_cargo', 'id_funcion', 'id_turno', 'id_resolucion', 'horar', 'cargos', 'created_at', 'updated_at'
+        ];
+        $sortBy = $request->string('sort_by')->toString() ?: 'id';
+        if (!in_array($sortBy, $allowedSorts, true)) {
+            $sortBy = 'id';
+        }
+        $sortDir = strtolower($request->string('sort_dir')->toString() ?: 'desc');
+        if (!in_array($sortDir, ['asc', 'desc'], true)) {
+            $sortDir = 'desc';
+        }
+
+        $query->select('proyecciones.*');
+        switch ($sortBy) {
+            case 'id_nivel':
+                $query->leftJoin('niveles as nivel_sort', 'nivel_sort.id', '=', 'proyecciones.id_nivel')
+                      ->orderBy('nivel_sort.nombre', $sortDir);
+                break;
+            case 'localidad':
+                $query->leftJoin('instituciones as inst_sort', 'inst_sort.id', '=', 'proyecciones.id_institucion')
+                      ->orderBy('inst_sort.localidad', $sortDir);
+                break;
+            case 'nombreInstitucion':
+                $query->leftJoin('instituciones as inst_sort2', 'inst_sort2.id', '=', 'proyecciones.id_institucion')
+                      ->orderBy('inst_sort2.nombre', $sortDir);
+                break;
+            case 'cargoDisplay':
+                $query->leftJoin('cargos as cargo_sort', 'cargo_sort.id', '=', 'proyecciones.id_cargo')
+                      ->orderBy('cargo_sort.codigo', $sortDir)
+                      ->orderBy('cargo_sort.nombre', $sortDir);
+                break;
+            case 'cantidadDisplay':
+                $query->orderByRaw("COALESCE(NULLIF(proyecciones.horar, 0), proyecciones.cargos, 0) $sortDir");
+                break;
+            case 'resolucionDisplay':
+            case 'id_resolucion':
+                $query->leftJoin('resoluciones as resol_sort', 'resol_sort.id', '=', 'proyecciones.id_resolucion')
+                      ->orderBy('resol_sort.nombre', $sortDir);
+                break;
+            default:
+                $directColumns = ['id','estado','motivo','año','orden','n_expediente','id_puesto','destino_nuevo','fecha_desde','fecha_hasta','id_institucion','id_cargo','id_funcion','id_turno','horar','cargos','created_at','updated_at'];
+                $column = in_array($sortBy, $directColumns, true) ? "proyecciones.\"$sortBy\"" : "proyecciones.id";
+                if ($sortBy === 'año') {
+                    $query->orderByRaw('proyecciones."año" ' . $sortDir);
+                } else {
+                    $query->orderByRaw("$column $sortDir");
+                }
+                break;
+        }
+
         $perPage = min($request->integer('per_page', 25), 100);
-        $proyecciones = $query->orderBy('id', 'desc')->paginate($perPage);
+        $proyecciones = $query->paginate($perPage);
 
         return response()->json([
             'data' => ProyeccionResource::collection($proyecciones->items()),
