@@ -33,6 +33,14 @@ final class ProyeccionController extends Controller
             $query->where('id_nivel', $request->integer('id_nivel'));
         }
 
+        if ($request->filled('id_resolucion')) {
+            $query->where('id_resolucion', $request->integer('id_resolucion'));
+        }
+
+        if ($request->filled('localidad')) {
+            $query->whereHas('institucion', fn ($q) => $q->where('localidad', $request->string('localidad')->toString()));
+        }
+
         // Búsqueda server-side
         if ($request->filled('search')) {
             $search = $request->string('search');
@@ -212,6 +220,14 @@ final class ProyeccionController extends Controller
     {
         $query = Proyeccion::with(['nivel', 'cargo', 'institucion', 'resolucion'])
             ->where('id_nivel', $idNivel);
+
+        if ($request->filled('id_resolucion')) {
+            $query->where('id_resolucion', $request->integer('id_resolucion'));
+        }
+
+        if ($request->filled('localidad')) {
+            $query->whereHas('institucion', fn ($q) => $q->where('localidad', $request->string('localidad')->toString()));
+        }
 
         // Búsqueda server-side
         if ($request->filled('search')) {
