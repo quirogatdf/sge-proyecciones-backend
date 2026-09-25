@@ -8,8 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Cargo;
 use App\Models\Institucion;
 use App\Models\Nivel;
-use App\Models\Proyeccion;
+use App\Models\ProyeccionInstrumento;
 use App\Models\Resolucion;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,7 +18,7 @@ final class ProyeccionFiltroController extends Controller
 {
     public function opciones(Request $request): JsonResponse
     {
-        if ($request->has('año') && !$request->has('anio')) {
+        if ($request->has('año') && ! $request->has('anio')) {
             $request->merge(['anio' => $request->input('año')]);
         } elseif ($request->has('año') && $request->has('anio') && empty($request->input('anio'))) {
             $request->merge(['anio' => $request->input('año')]);
@@ -34,71 +35,51 @@ final class ProyeccionFiltroController extends Controller
         ]);
 
         $motivoNorm = null;
-        if (!empty($validated['motivo'])) {
+        if (! empty($validated['motivo'])) {
             $motivoNorm = $validated['motivo'] === 'Creacion' ? 'Creación' : $validated['motivo'];
         }
 
         $anio = $validated['anio'] ?? null;
-        if (empty($anio) && !empty($validated['año'])) {
+        if (empty($anio) && ! empty($validated['año'])) {
             $anio = $validated['año'];
         }
 
-        $qInst = Proyeccion::query();
-        if (!empty($validated['id_resolucion'])) {
-            $qInst->where('id_resolucion', $validated['id_resolucion']);
-        }
-        if (!empty($anio)) {
-            $qInst->where('año', $anio);
-        }
-        if (!empty($motivoNorm)) {
-            $qInst->where('motivo', $motivoNorm);
-        }
-        if (!empty($validated['id_nivel'])) {
-            $qInst->where('id_nivel', $validated['id_nivel']);
-        }
-        if (!empty($validated['id_cargo'])) {
-            $qInst->where('id_cargo', $validated['id_cargo']);
-        }
-        $idsInst = $qInst->distinct()->pluck('id_institucion')->filter()->values();
+        // --- Instituciones: se filtran por resolucion, año, motivo, nivel y cargo ---
+        $qInst = ProyeccionInstrumento::query();
+        $this->aplicarFiltros($qInst, [
+            'anio' => $anio,
+            'motivo' => $motivoNorm,
+            'id_resolucion' => $validated['id_resolucion'] ?? null,
+            'id_cargo' => $validated['id_cargo'] ?? null,
+            'id_nivel' => $validated['id_nivel'] ?? null,
+        ]);
+        $idsInst = $qInst
+            ->join('proyecciones', 'proyecciones.id', '=', 'proyeccion_instrumentos.proyeccion_id')
+            ->distinct()->pluck('proyecciones.id_institucion')->filter()->values();
         $instituciones = $idsInst->isEmpty()
             ? collect()
             : Institucion::whereIn('id', $idsInst)->orderBy('nombre')->get(['id', 'nombre', 'cuise', 'localidad']);
 
-        $qCargo = Proyeccion::query();
-        if (!empty($validated['id_institucion'])) {
-            $qCargo->where('id_institucion', $validated['id_institucion']);
-        } elseif (!empty($validated['id_resolucion'])) {
-            $qCargo->where('id_resolucion', $validated['id_resolucion']);
-        }
-        if (!empty($validated['id_resolucion'])) {
-            $qCargo->where('id_resolucion', $validated['id_resolucion']);
-        }
-        if (!empty($anio)) {
-            $qCargo->where('año', $anio);
-        }
-        if (!empty($motivoNorm)) {
-            $qCargo->where('motivo', $motivoNorm);
-        }
-        if (!empty($validated['id_nivel'])) {
-            $qCargo->where('id_nivel', $validated['id_nivel']);
-        }
-        if (!empty($validated['id_cargo'])) {
-            $qCargo->where('id_cargo', $validated['id_cargo']);
-        }
+        // --- Cargos: filtrados por institucion / resolucion, año, motivo, nivel y cargo ---
+        $qCargo = ProyeccionInstrumento::query();
+        $this->aplicarFiltros($qCargo, [
+            'anio' => $anio,
+            'motivo' => $motivoNorm,
+            'id_resolucion' => $validated['id_resolucion'] ?? null,
+            'id_cargo' => $validated['id_cargo'] ?? null,
+            'id_nivel' => $validated['id_nivel'] ?? null,
+            'id_institucion' => $validated['id_institucion'] ?? null,
+        ]);
         $idsCargo = $qCargo->distinct()->pluck('id_cargo')->filter()->values();
         $cargos = $idsCargo->isEmpty()
             ? collect()
             : Cargo::whereIn('id', $idsCargo)->orderBy('nombre')->get(['id', 'nombre', 'codigo', 'tipo']);
 
-        $qRes = Proyeccion::query();
-        if (!empty($anio)) {
-            $qRes->where('año', $anio);
-        }
-        if (!empty($motivoNorm)) {
-            $qRes->where('motivo', $motivoNorm);
-        }
-        $hasResFilter = !empty($anio) || !empty($motivoNorm);
+        // --- Resoluciones: solo se acotan si hay filtro por año o motivo ---
+        $hasResFilter = ! empty($anio) || ! empty($motivoNorm);
         if ($hasResFilter) {
+            $qRes = ProyeccionInstrumento::query();
+            $this->aplicarFiltros($qRes, ['anio' => $anio, 'motivo' => $motivoNorm]);
             $idsRes = $qRes->distinct()->pluck('id_resolucion')->filter()->values();
             $resoluciones = $idsRes->isEmpty()
                 ? collect()
@@ -107,16 +88,14 @@ final class ProyeccionFiltroController extends Controller
             $resoluciones = Resolucion::orderBy('nombre')->get(['id', 'nombre', 'año']);
         }
 
-        $qNivel = Proyeccion::query();
-        if (!empty($anio)) {
-            $qNivel->where('año', $anio);
-        }
-        if (!empty($motivoNorm)) {
-            $qNivel->where('motivo', $motivoNorm);
-        }
-        $hasNivelFilter = !empty($anio) || !empty($motivoNorm);
+        // --- Niveles: solo se acotan si hay filtro por año o motivo ---
+        $hasNivelFilter = ! empty($anio) || ! empty($motivoNorm);
         if ($hasNivelFilter) {
-            $idsNivel = $qNivel->distinct()->pluck('id_nivel')->filter()->values();
+            $qNivel = ProyeccionInstrumento::query();
+            $this->aplicarFiltros($qNivel, ['anio' => $anio, 'motivo' => $motivoNorm]);
+            $idsNivel = $qNivel
+                ->join('proyecciones', 'proyecciones.id', '=', 'proyeccion_instrumentos.proyeccion_id')
+                ->distinct()->pluck('proyecciones.id_nivel')->filter()->values();
             $niveles = $idsNivel->isEmpty()
                 ? collect()
                 : Nivel::whereIn('id', $idsNivel)->orderBy('nombre')->get(['id', 'nombre']);
@@ -132,5 +111,33 @@ final class ProyeccionFiltroController extends Controller
                 'niveles' => $niveles,
             ],
         ]);
+    }
+
+    /**
+     * Aplica los filtros no vacíos. Los de instrumento van directo; los de
+     * plaza (nivel, institución) van vía la relación `proyeccion`.
+     *
+     * @param  array<string, mixed>  $filtros
+     */
+    private function aplicarFiltros(Builder $query, array $filtros): void
+    {
+        if (! empty($filtros['anio'])) {
+            $query->where('proyeccion_instrumentos.anio', $filtros['anio']);
+        }
+        if (! empty($filtros['motivo'])) {
+            $query->where('proyeccion_instrumentos.motivo', $filtros['motivo']);
+        }
+        if (! empty($filtros['id_resolucion'])) {
+            $query->where('proyeccion_instrumentos.id_resolucion', $filtros['id_resolucion']);
+        }
+        if (! empty($filtros['id_cargo'])) {
+            $query->where('proyeccion_instrumentos.id_cargo', $filtros['id_cargo']);
+        }
+        if (! empty($filtros['id_nivel'])) {
+            $query->whereHas('proyeccion', fn ($p) => $p->where('id_nivel', $filtros['id_nivel']));
+        }
+        if (! empty($filtros['id_institucion'])) {
+            $query->whereHas('proyeccion', fn ($p) => $p->where('id_institucion', $filtros['id_institucion']));
+        }
     }
 }

@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('instituciones', function (Blueprint $table) {
             $table->id();
-            $table->enum('localidad',['Rio Grande', 'Ushuaia', 'Tolhuin']);
+            $table->enum('localidad', ['Rio Grande', 'Ushuaia', 'Tolhuin']);
             $table->foreignId('nivel_id')->constrained('niveles')->onDelete('cascade');
-            $table->string('cuise',4)->unique();
+            $table->string('cuise', 4)->unique();
             $table->string('nombre');
             $table->timestamps();
         });

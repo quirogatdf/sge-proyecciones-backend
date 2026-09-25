@@ -6,7 +6,7 @@ use App\Models\Nivel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Nivel>
+ * @extends Factory<Nivel>
  */
 class NivelFactory extends Factory
 {
@@ -15,14 +15,14 @@ class NivelFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => fake()->unique()->randomElement([
+            'nombre' => fake()->randomElement([
                 'Primario',
                 'Secundario',
                 'Terciario',
                 'Inicial',
                 'Adultos',
             ]),
-            'sigla' => fake()->unique()->lexify('???'),
+            'sigla' => fake()->lexify('???'),
         ];
     }
 }

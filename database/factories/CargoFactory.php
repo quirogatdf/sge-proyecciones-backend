@@ -6,7 +6,7 @@ use App\Models\Cargo;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Cargo>
+ * @extends Factory<Cargo>
  */
 class CargoFactory extends Factory
 {
@@ -16,7 +16,7 @@ class CargoFactory extends Factory
     {
         return [
             'codigo' => fake()->unique()->numerify('####'),
-            'nombre' => fake()->unique()->randomElement([
+            'nombre' => fake()->randomElement([
                 'Director',
                 'Subdirector',
                 'Secretario',

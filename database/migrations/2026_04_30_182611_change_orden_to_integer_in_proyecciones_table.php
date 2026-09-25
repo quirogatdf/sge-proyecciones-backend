@@ -17,7 +17,7 @@ return new class extends Migration
         }
 
         DB::statement("ALTER TABLE proyecciones ALTER COLUMN orden TYPE INTEGER USING (CASE WHEN orden ~ '^[0-9]+$' THEN orden::INTEGER ELSE NULL END)");
-        DB::statement("ALTER TABLE proyecciones ALTER COLUMN orden DROP NOT NULL");
+        DB::statement('ALTER TABLE proyecciones ALTER COLUMN orden DROP NOT NULL');
     }
 
     /**
@@ -29,6 +29,6 @@ return new class extends Migration
             return;
         }
 
-        DB::statement("ALTER TABLE proyecciones ALTER COLUMN orden TYPE VARCHAR(4) USING (orden::VARCHAR)");
+        DB::statement('ALTER TABLE proyecciones ALTER COLUMN orden TYPE VARCHAR(4) USING (orden::VARCHAR)');
     }
 };

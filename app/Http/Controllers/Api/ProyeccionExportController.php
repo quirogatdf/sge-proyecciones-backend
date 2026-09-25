@@ -34,12 +34,12 @@ final class ProyeccionExportController extends Controller
     public function export(Request $request)
     {
         $validated = $request->validate([
-            'motivo'          => 'nullable|string|in:Continuidad,Creacion,Creación',
-            'id_nivel'        => 'nullable|integer|exists:niveles,id',
-            'id_institucion'  => 'nullable|integer|exists:instituciones,id',
-            'id_cargo'        => 'nullable|integer|exists:cargos,id',
-            'id_resolucion'   => 'nullable|integer|exists:resoluciones,id',
-            'anio'            => 'nullable|string|size:4',
+            'motivo' => 'nullable|string|in:Continuidad,Creacion,Creación',
+            'id_nivel' => 'nullable|integer|exists:niveles,id',
+            'id_institucion' => 'nullable|integer|exists:instituciones,id',
+            'id_cargo' => 'nullable|integer|exists:cargos,id',
+            'id_resolucion' => 'nullable|integer|exists:resoluciones,id',
+            'anio' => 'nullable|string|size:4',
         ]);
 
         try {

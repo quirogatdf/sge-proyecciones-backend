@@ -77,7 +77,7 @@ class UserTest extends TestCase
 
     public function test_role_is_in_fillable(): void
     {
-        $user = new User();
+        $user = new User;
 
         $this->assertContains('role', $user->getFillable());
     }

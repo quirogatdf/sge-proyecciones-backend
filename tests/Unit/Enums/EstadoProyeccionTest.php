@@ -12,7 +12,7 @@ class EstadoProyeccionTest extends TestCase
     public function test_enum_cases_exist(): void
     {
         $cases = EstadoProyeccion::cases();
-        
+
         $this->assertCount(3, $cases);
         $this->assertContainsEquals(EstadoProyeccion::Autorizado, $cases);
         $this->assertContainsEquals(EstadoProyeccion::Rechazado, $cases);

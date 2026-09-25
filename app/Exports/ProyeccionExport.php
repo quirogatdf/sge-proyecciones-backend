@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Exports;
 
-use App\Models\Proyeccion;
+use App\Models\ProyeccionInstrumento;
 use App\Services\ProyeccionExportService;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Illuminate\Support\Collection;
 
-final class ProyeccionExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize
+final class ProyeccionExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping
 {
     private int $orden = 0;
 
     /**
-     * @var Collection<int, Proyeccion>
+     * @var Collection<int, ProyeccionInstrumento>
      */
     private Collection $records;
 
@@ -30,7 +30,7 @@ final class ProyeccionExport implements FromCollection, WithHeadings, WithMappin
     }
 
     /**
-     * @return Collection<int, Proyeccion>
+     * @return Collection<int, ProyeccionInstrumento>
      */
     public function collection(): Collection
     {
@@ -57,7 +57,7 @@ final class ProyeccionExport implements FromCollection, WithHeadings, WithMappin
     }
 
     /**
-     * @param Proyeccion $proyeccion
+     * @param  ProyeccionInstrumento  $proyeccion
      * @return array<int, mixed>
      */
     public function map(mixed $proyeccion): array

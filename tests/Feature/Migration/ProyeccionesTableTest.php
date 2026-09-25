@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Migration;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -20,11 +21,11 @@ class ProyeccionesTableTest extends TestCase
             '2026_04_27_121652_create_institucions_table.php',
             '2026_04_28_000000_create_turnos_table.php',
         ];
-        
+
         foreach ($baseMigrations as $migration) {
             $this->artisan('migrate', ['--path' => "database/migrations/{$migration}"]);
         }
-        
+
         // Run our proyecciones migration (user's exact filename)
         $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_29_000001_create_proyecciones_table.php']);
     }
@@ -33,7 +34,7 @@ class ProyeccionesTableTest extends TestCase
     {
         // Rollback our migration
         $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_29_000001_create_proyecciones_table.php']);
-        
+
         // Rollback base migrations
         $baseMigrations = [
             '2026_04_28_000000_create_turnos_table.php',
@@ -42,11 +43,11 @@ class ProyeccionesTableTest extends TestCase
             '2026_04_27_120600_create_cargos_table.php',
             '2026_04_27_121651_create_nivels_table.php',
         ];
-        
+
         foreach ($baseMigrations as $migration) {
             $this->artisan('migrate:rollback', ['--path' => "database/migrations/{$migration}"]);
         }
-        
+
         parent::tearDown();
     }
 
@@ -58,14 +59,14 @@ class ProyeccionesTableTest extends TestCase
     public function test_table_has_correct_columns(): void
     {
         $columns = Schema::getColumnListing('proyecciones');
-        
+
         $expectedColumns = [
             'id', 'id_nivel', 'estado', 'n_expediente', 'motivo', 'orden', 'horar', 'cargos',
             'id_cargo', 'id_funcion', 'id_turno', 'fecha_desde', 'fecha_hasta', 'id_institucion',
             'resolucion_ministerial', 'resolucion_ministerial_ext', 'disposicion_sgnij', 'rect_disposoco_sgnij',
-            'created_at', 'updated_at'
+            'created_at', 'updated_at',
         ];
-        
+
         foreach ($expectedColumns as $column) {
             $this->assertContains($column, $columns, "Column {$column} not found in proyecciones table");
         }
@@ -85,9 +86,9 @@ class ProyeccionesTableTest extends TestCase
             'cuise' => '1234',
             'nombre' => 'Test Institucion',
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
-        
+
         // Insert a proyeccion with valid id_nivel using DB facade
         $proyeccionId = \DB::table('proyecciones')->insertGetId([
             'id_nivel' => $nivelId,
@@ -101,11 +102,11 @@ class ProyeccionesTableTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-        
+
         $this->assertNotNull($proyeccionId);
-        
+
         // Try to insert with invalid id_nivel (should fail if FK works)
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         \DB::table('proyecciones')->insert([
             'id_nivel' => 9999, // Non-existent
             'estado' => 'Autorizado',

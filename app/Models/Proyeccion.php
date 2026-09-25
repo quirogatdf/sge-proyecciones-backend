@@ -1,35 +1,45 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
 namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Enums\EstadoProyeccion;
-use App\Enums\MotivoProyeccion;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Proyeccion extends Model {
+/**
+ * Una proyección es la "plaza" (nivel + institución + puesto).
+ *
+ * Los datos que varían por año (estado, motivo, cargo, función, turno,
+ * fechas, resoluciones, etc.) viven en `ProyeccionInstrumento`, un snapshot
+ * por (proyeccion, anio).
+ */
+class Proyeccion extends Model
+{
+    use HasFactory;
+
     protected $table = 'proyecciones';
+
     protected $fillable = [
-        'id_nivel', 'estado', 'n_expediente', 'motivo', 'orden',
-        'horar', 'cargos', 'id_cargo', 'id_funcion', 'id_turno',
-        'fecha_desde', 'fecha_hasta', 'id_institucion',
-        'resolucion_ministerial', 'resolucion_ministerial_ext',
-        'disposicion_sgnij', 'rect_disposoco_sgnij',
-        'año', 'id_puesto', 'resolucion_ministerial_rect1', 'resolucion_ministerial_rect2',
-        'resolucion_previa_continuidad', 'destino_anterior', 'destino_nuevo',
-        'id_resolucion'
+        'id_nivel',
+        'id_institucion',
+        'id_puesto',
     ];
-    protected $casts = [
-        'estado' => EstadoProyeccion::class,
-        'motivo' => MotivoProyeccion::class,
-        'fecha_desde' => 'date',
-        'fecha_hasta' => 'date',
-        'orden' => 'integer',
-        'horar' => 'integer',
-        'cargos' => 'integer',
-    ];
-    public function nivel(): BelongsTo { return $this->belongsTo(Nivel::class, 'id_nivel'); }
-    public function cargo(): BelongsTo { return $this->belongsTo(Cargo::class, 'id_cargo'); }
-    public function funcion(): BelongsTo { return $this->belongsTo(Funcion::class, 'id_funcion'); }
-    public function turno(): BelongsTo { return $this->belongsTo(Turno::class, 'id_turno'); }
-    public function institucion(): BelongsTo { return $this->belongsTo(Institucion::class, 'id_institucion'); }
-    public function resolucion(): BelongsTo { return $this->belongsTo(Resolucion::class, 'id_resolucion'); }
+
+    public function nivel(): BelongsTo
+    {
+        return $this->belongsTo(Nivel::class, 'id_nivel');
+    }
+
+    public function institucion(): BelongsTo
+    {
+        return $this->belongsTo(Institucion::class, 'id_institucion');
+    }
+
+    public function instrumentos(): HasMany
+    {
+        return $this->hasMany(ProyeccionInstrumento::class, 'proyeccion_id');
+    }
 }

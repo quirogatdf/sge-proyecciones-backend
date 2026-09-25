@@ -4,138 +4,78 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Models;
 
-use App\Enums\EstadoProyeccion;
-use App\Enums\MotivoProyeccion;
+use App\Models\Institucion;
+use App\Models\Nivel;
 use App\Models\Proyeccion;
+use App\Models\ProyeccionInstrumento;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ProyeccionTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        // Run all necessary migrations
-        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_27_121651_create_nivels_table.php']);
-        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_27_120600_create_cargos_table.php']);
-        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_28_000000_create_funciones_table.php']);
-        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_27_121652_create_institucions_table.php']);
-        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_28_000000_create_turnos_table.php']);
-        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_29_000001_create_proyecciones_table.php']);
-    }
-
-    protected function tearDown(): void
-    {
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_29_000001_create_proyecciones_table.php']);
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_28_000000_create_turnos_table.php']);
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_27_121652_create_institucions_table.php']);
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_28_000000_create_funciones_table.php']);
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_27_120600_create_cargos_table.php']);
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_27_121651_create_nivels_table.php']);
-        parent::tearDown();
-    }
+    use RefreshDatabase;
 
     public function test_model_has_correct_fillable(): void
     {
-        $proyeccion = new Proyeccion();
-        $expectedFillable = [
-            'id_nivel', 'estado', 'n_expediente', 'motivo', 'orden', 'horar', 'cargos',
-            'id_cargo', 'id_funcion', 'id_turno', 'fecha_desde', 'fecha_hasta', 'id_institucion',
-            'resolucion_ministerial', 'resolucion_ministerial_ext', 'disposicion_sgnij', 'rect_disposoco_sgnij',
-            'año', 'id_puesto', 'resolucion_ministerial_rect1', 'resolucion_ministerial_rect2',
-            'resolucion_previa_continuidad', 'destino_anterior', 'destino_nuevo', 'id_resolucion',
-        ];
-        
-        $this->assertEquals($expectedFillable, $proyeccion->getFillable());
+        $this->assertSame(
+            ['id_nivel', 'id_institucion', 'id_puesto'],
+            (new Proyeccion)->getFillable()
+        );
     }
 
-    public function test_estado_casts_to_enum(): void
+    public function test_ya_no_castea_los_campos_movidos_al_instrumento(): void
     {
-        $proyeccion = Proyeccion::create([
-            'id_nivel' => \DB::table('niveles')->insertGetId(['nombre' => 'Nivel', 'sigla' => 'N', 'created_at' => now(), 'updated_at' => now()]),
-            'estado' => 'Autorizado',
-            'motivo' => 'Creación',
-            'fecha_desde' => '2026-01-01',
-            'id_cargo' => \DB::table('cargos')->insertGetId(['codigo' => '1234', 'nombre' => 'Cargo', 'created_at' => now(), 'updated_at' => now()]),
-            'id_funcion' => \DB::table('funciones')->insertGetId(['nombre' => 'Funcion', 'created_at' => now(), 'updated_at' => now()]),
-            'id_turno' => \DB::table('turnos')->insertGetId(['nombre' => 'Turno', 'created_at' => now(), 'updated_at' => now()]),
-            'id_institucion' => \DB::table('instituciones')->insertGetId([
-                'localidad' => 'Ushuaia',
-                'nivel_id' => \DB::table('niveles')->insertGetId(['nombre' => 'Nivel2', 'sigla' => 'N2', 'created_at' => now(), 'updated_at' => now()]),
-                'cuise' => '1234',
-                'nombre' => 'Institucion',
-                'created_at' => now(),
-                'updated_at' => now()
-            ]),
-        ]);
-        
-        $this->assertInstanceOf(EstadoProyeccion::class, $proyeccion->estado);
-        $this->assertEquals(EstadoProyeccion::Autorizado, $proyeccion->estado);
-    }
+        $casts = (new Proyeccion)->getCasts();
 
-    public function test_motivo_casts_to_enum(): void
-    {
-        $proyeccion = Proyeccion::create([
-            'id_nivel' => \DB::table('niveles')->insertGetId(['nombre' => 'Nivel', 'sigla' => 'N', 'created_at' => now(), 'updated_at' => now()]),
-            'estado' => 'Autorizado',
-            'motivo' => 'Creación',
-            'fecha_desde' => '2026-01-01',
-            'id_cargo' => \DB::table('cargos')->insertGetId(['codigo' => '1234', 'nombre' => 'Cargo', 'created_at' => now(), 'updated_at' => now()]),
-            'id_funcion' => \DB::table('funciones')->insertGetId(['nombre' => 'Funcion', 'created_at' => now(), 'updated_at' => now()]),
-            'id_turno' => \DB::table('turnos')->insertGetId(['nombre' => 'Turno', 'created_at' => now(), 'updated_at' => now()]),
-            'id_institucion' => \DB::table('instituciones')->insertGetId([
-                'localidad' => 'Ushuaia',
-                'nivel_id' => \DB::table('niveles')->insertGetId(['nombre' => 'Nivel2', 'sigla' => 'N2', 'created_at' => now(), 'updated_at' => now()]),
-                'cuise' => '1234',
-                'nombre' => 'Institucion',
-                'created_at' => now(),
-                'updated_at' => now()
-            ]),
-        ]);
-        
-        $this->assertInstanceOf(MotivoProyeccion::class, $proyeccion->motivo);
-        $this->assertEquals(MotivoProyeccion::Creacion, $proyeccion->motivo);
-    }
-
-    public function test_fecha_desde_casts_to_date(): void
-    {
-        $proyeccion = Proyeccion::create([
-            'id_nivel' => \DB::table('niveles')->insertGetId(['nombre' => 'Nivel', 'sigla' => 'N', 'created_at' => now(), 'updated_at' => now()]),
-            'estado' => 'Autorizado',
-            'motivo' => 'Creación',
-            'fecha_desde' => '2026-01-01',
-            'id_cargo' => \DB::table('cargos')->insertGetId(['codigo' => '1234', 'nombre' => 'Cargo', 'created_at' => now(), 'updated_at' => now()]),
-            'id_funcion' => \DB::table('funciones')->insertGetId(['nombre' => 'Funcion', 'created_at' => now(), 'updated_at' => now()]),
-            'id_turno' => \DB::table('turnos')->insertGetId(['nombre' => 'Turno', 'created_at' => now(), 'updated_at' => now()]),
-            'id_institucion' => \DB::table('instituciones')->insertGetId([
-                'localidad' => 'Ushuaia',
-                'nivel_id' => \DB::table('niveles')->insertGetId(['nombre' => 'Nivel2', 'sigla' => 'N2', 'created_at' => now(), 'updated_at' => now()]),
-                'cuise' => '1234',
-                'nombre' => 'Institucion',
-                'created_at' => now(),
-                'updated_at' => now()
-            ]),
-        ]);
-        
-        $this->assertInstanceOf(\Carbon\Carbon::class, $proyeccion->fecha_desde);
-        $this->assertEquals('2026-01-01', $proyeccion->fecha_desde->format('Y-m-d'));
+        foreach (['estado', 'motivo', 'fecha_desde', 'fecha_hasta', 'orden', 'horar', 'cargos'] as $columna) {
+            $this->assertArrayNotHasKey($columna, $casts, "El cast '{$columna}' ya no debería existir en Proyeccion.");
+        }
     }
 
     public function test_nivel_relationship_is_belongs_to(): void
     {
-        $proyeccion = new Proyeccion();
-        $relation = $proyeccion->nivel();
-        
+        $relation = (new Proyeccion)->nivel();
+
         $this->assertInstanceOf(BelongsTo::class, $relation);
-        $this->assertEquals('id_nivel', $relation->getForeignKeyName());
+        $this->assertSame('id_nivel', $relation->getForeignKeyName());
     }
 
-    public function test_cargo_relationship_is_belongs_to(): void
+    public function test_institucion_relationship_is_belongs_to(): void
     {
-        $proyeccion = new Proyeccion();
-        $relation = $proyeccion->cargo();
-        
+        $relation = (new Proyeccion)->institucion();
+
         $this->assertInstanceOf(BelongsTo::class, $relation);
-        $this->assertEquals('id_cargo', $relation->getForeignKeyName());
+        $this->assertSame('id_institucion', $relation->getForeignKeyName());
+    }
+
+    public function test_instrumentos_relationship_is_has_many(): void
+    {
+        $proyeccion = Proyeccion::factory()->create();
+        ProyeccionInstrumento::factory()->create([
+            'proyeccion_id' => $proyeccion->id,
+            'anio' => '2026',
+        ]);
+
+        $relation = $proyeccion->instrumentos();
+
+        $this->assertInstanceOf(HasMany::class, $relation);
+        $this->assertSame('proyeccion_id', $relation->getForeignKeyName());
+        $this->assertCount(1, $proyeccion->fresh()->instrumentos);
+    }
+
+    public function test_crea_una_plaza_solo_con_la_base(): void
+    {
+        $proyeccion = Proyeccion::create([
+            'id_nivel' => Nivel::factory()->create()->id,
+            'id_institucion' => Institucion::factory()->create()->id,
+            'id_puesto' => 'Puesto 1',
+        ]);
+
+        $this->assertDatabaseHas('proyecciones', [
+            'id' => $proyeccion->id,
+            'id_puesto' => 'Puesto 1',
+        ]);
     }
 }

@@ -1,11 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::table('proyecciones', function (Blueprint $table) {
             // Hacer año obligatorio
             $table->string('año', 4)->nullable(false)->change();
@@ -19,7 +23,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::table('proyecciones', function (Blueprint $table) {
             // Revertir año a nullable
             $table->string('año', 4)->nullable()->change();

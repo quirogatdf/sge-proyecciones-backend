@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use Illuminate\Validation\Rule;
-
 final class UpdateInstitucionRequest extends ApiRequest
 {
     public function rules(): array

@@ -46,7 +46,7 @@ final class InstitucionController extends Controller
     {
         $institucion = Institucion::findOrFail($institucion);
         $institucion->update($request->validated());
-        
+
         return response()->json([
             'data' => new InstitucionResource($institucion->load('nivel')),
             'message' => 'Institución actualizada exitosamente',

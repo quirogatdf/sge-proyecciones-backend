@@ -12,7 +12,7 @@ class MotivoProyeccionTest extends TestCase
     public function test_enum_cases_exist(): void
     {
         $cases = MotivoProyeccion::cases();
-        
+
         $this->assertCount(4, $cases);
         $this->assertContainsEquals(MotivoProyeccion::Creacion, $cases);
         $this->assertContainsEquals(MotivoProyeccion::Continuidad, $cases);

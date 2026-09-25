@@ -28,8 +28,8 @@ final class Resolucion extends Model
         ];
     }
 
-    public function proyecciones(): HasMany
+    public function instrumentos(): HasMany
     {
-        return $this->hasMany(Proyeccion::class, 'id_resolucion');
+        return $this->hasMany(ProyeccionInstrumento::class, 'id_resolucion');
     }
 }

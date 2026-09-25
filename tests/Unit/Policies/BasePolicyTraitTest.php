@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Policies;
 
-use App\Enums\RolUsuario;
 use App\Models\User;
 use App\Policies\BasePolicyTrait;
 use Tests\TestCase;

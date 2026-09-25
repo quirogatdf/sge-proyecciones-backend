@@ -6,137 +6,131 @@ namespace Tests\Unit\Requests;
 
 use App\Http\Requests\StoreProyeccionRequest;
 use App\Http\Requests\UpdateProyeccionRequest;
+use App\Models\Institucion;
+use App\Models\Nivel;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Enum;
 use Tests\TestCase;
 
 class ProyeccionRequestTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        // Run necessary migrations
-        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_27_121651_create_nivels_table.php']);
-        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_27_120600_create_cargos_table.php']);
-        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_28_000000_create_funciones_table.php']);
-        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_27_121652_create_institucions_table.php']);
-        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_28_000000_create_turnos_table.php']);
-        $this->artisan('migrate', ['--path' => 'database/migrations/2026_04_29_000001_create_proyecciones_table.php']);
-    }
+    use RefreshDatabase;
 
-    protected function tearDown(): void
+    public function test_store_request_define_plaza_e_instrumento(): void
     {
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_29_000001_create_proyecciones_table.php']);
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_28_000000_create_turnos_table.php']);
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_27_121652_create_institucions_table.php']);
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_28_000000_create_funciones_table.php']);
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_27_120600_create_cargos_table.php']);
-        $this->artisan('migrate:rollback', ['--path' => 'database/migrations/2026_04_27_121651_create_nivels_table.php']);
-        parent::tearDown();
-    }
+        $rules = (new StoreProyeccionRequest)->rules();
 
-    public function test_store_request_has_correct_rules(): void
-    {
-        $request = new StoreProyeccionRequest();
-        $rules = $request->rules();
-        
-        $this->assertArrayHasKey('estado', $rules);
-        $this->assertArrayHasKey('motivo', $rules);
-        $this->assertArrayHasKey('fecha_desde', $rules);
-        $this->assertArrayHasKey('id_nivel', $rules);
-        $this->assertArrayHasKey('id_institucion', $rules);
-        $this->assertArrayHasKey('id_cargo', $rules);
-        $this->assertArrayHasKey('id_funcion', $rules);
-        $this->assertArrayHasKey('id_turno', $rules);
-        
-        // Check estado rules (uses Rule::enum instead of in:...)
-        $this->assertContains('required', $rules['estado']);
+        // Plaza
+        foreach (['id_nivel', 'id_institucion', 'id_puesto'] as $key) {
+            $this->assertArrayHasKey($key, $rules, "Falta la regla de plaza '{$key}'.");
+        }
+        $this->assertContains('required', $rules['id_nivel']);
+        $this->assertContains('required', $rules['id_institucion']);
+        $this->assertContains('nullable', $rules['id_puesto']);
+
+        // Instrumento anidado
+        $this->assertArrayHasKey('instrumento', $rules);
+        $this->assertArrayHasKey('instrumento.anio', $rules);
+        $this->assertContains('required_with:instrumento', $rules['instrumento.anio']);
+
+        foreach (['estado', 'motivo', 'fecha_desde', 'id_cargo', 'id_funcion', 'id_turno'] as $key) {
+            $this->assertArrayHasKey("instrumento.{$key}", $rules, "Falta la regla 'instrumento.{$key}'.");
+        }
+
         $this->assertTrue(
-            collect($rules['estado'])->contains(fn ($rule) => $rule instanceof \Illuminate\Validation\Rules\Enum)
+            collect($rules['instrumento.estado'])->contains(fn ($rule) => $rule instanceof Enum)
         );
-
-        // Check motivo rules (uses Rule::enum instead of in:...)
-        $this->assertContains('required', $rules['motivo']);
         $this->assertTrue(
-            collect($rules['motivo'])->contains(fn ($rule) => $rule instanceof \Illuminate\Validation\Rules\Enum)
+            collect($rules['instrumento.motivo'])->contains(fn ($rule) => $rule instanceof Enum)
         );
-        
-        // Check fecha_desde rules
-        $this->assertContains('required', $rules['fecha_desde']);
-        $this->assertContains('date', $rules['fecha_desde']);
     }
 
-    public function test_store_request_has_spanish_messages(): void
+    public function test_store_request_tiene_mensajes_en_espanol(): void
     {
-        $request = new StoreProyeccionRequest();
-        $messages = $request->messages();
-        
-        $this->assertArrayHasKey('estado.required', $messages);
-        $this->assertArrayHasKey('motivo.required', $messages);
-        $this->assertArrayHasKey('fecha_desde.required', $messages);
+        $messages = (new StoreProyeccionRequest)->messages();
+
+        $this->assertArrayHasKey('id_nivel.required', $messages);
+        $this->assertArrayHasKey('id_institucion.required', $messages);
+        $this->assertArrayHasKey('instrumento.anio.required_with', $messages);
+        $this->assertArrayHasKey('instrumento.estado.enum', $messages);
+        $this->assertArrayHasKey('instrumento.motivo.enum', $messages);
     }
 
-    public function test_update_request_has_correct_rules(): void
+    public function test_update_request_solo_permite_editar_la_plaza(): void
     {
-        $request = new UpdateProyeccionRequest();
-        $rules = $request->rules();
-        
-        // Update request should have same rules as store (all fields required for update too)
-        $this->assertArrayHasKey('estado', $rules);
-        $this->assertContains('required', $rules['estado']);
+        $rules = (new UpdateProyeccionRequest)->rules();
+
+        $this->assertSame(['id_nivel', 'id_institucion', 'id_puesto'], array_keys($rules));
+
+        foreach ($rules as $key => $reglas) {
+            $this->assertContains('sometimes', $reglas, "La regla '{$key}' debería ser opcional (sometimes).");
+        }
     }
 
-    public function test_validation_passes_with_valid_data(): void
-    {
-        $nivelId = \DB::table('niveles')->insertGetId(['nombre' => 'Nivel', 'sigla' => 'N', 'created_at' => now(), 'updated_at' => now()]);
-        $cargoId = \DB::table('cargos')->insertGetId(['codigo' => '1234', 'nombre' => 'Cargo', 'created_at' => now(), 'updated_at' => now()]);
-        $funcionId = \DB::table('funciones')->insertGetId(['nombre' => 'Funcion', 'created_at' => now(), 'updated_at' => now()]);
-        $turnoId = \DB::table('turnos')->insertGetId(['nombre' => 'Turno', 'created_at' => now(), 'updated_at' => now()]);
-        $institucionId = \DB::table('instituciones')->insertGetId([
-            'localidad' => 'Ushuaia',
-            'nivel_id' => \DB::table('niveles')->insertGetId(['nombre' => 'Nivel2', 'sigla' => 'N2', 'created_at' => now(), 'updated_at' => now()]),
-            'cuise' => '1234',
-            'nombre' => 'Institucion',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-        
-        $data = [
-            'estado' => 'Autorizado',
-            'motivo' => 'Creación',
-            'fecha_desde' => '2026-01-01',
-            'id_nivel' => $nivelId,
-            'id_institucion' => $institucionId,
-            'id_cargo' => $cargoId,
-            'id_funcion' => $funcionId,
-            'id_turno' => $turnoId,
-            'orden' => 1,
-            'destino_nuevo' => 'Destino de prueba',
-            'año' => '2026',
-        ];
-        
-        $request = new StoreProyeccionRequest();
-        $validator = Validator::make($data, $request->rules(), $request->messages());
-        
-        $this->assertTrue($validator->passes());
-    }
-
-    public function test_validation_fails_with_invalid_estado(): void
+    public function test_store_pasa_con_solo_la_plaza(): void
     {
         $data = [
-            'estado' => 'Invalido',
-            'motivo' => 'Creación',
-            'fecha_desde' => '2026-01-01',
-            'id_nivel' => 1,
-            'id_institucion' => 1,
-            'id_cargo' => 1,
-            'id_funcion' => 1,
-            'id_turno' => 1,
+            'id_nivel' => Nivel::factory()->create()->id,
+            'id_institucion' => Institucion::factory()->create()->id,
+            'id_puesto' => 'Puesto 1',
         ];
-        
-        $request = new StoreProyeccionRequest();
+
+        $request = new StoreProyeccionRequest;
         $validator = Validator::make($data, $request->rules(), $request->messages());
-        
+
+        $this->assertTrue($validator->passes(), $validator->errors()->toJson());
+    }
+
+    public function test_store_pasa_con_plaza_e_instrumento(): void
+    {
+        $data = [
+            'id_nivel' => Nivel::factory()->create()->id,
+            'id_institucion' => Institucion::factory()->create()->id,
+            'instrumento' => [
+                'anio' => '2026',
+                'estado' => 'Autorizado',
+                'motivo' => 'Creación',
+                'fecha_desde' => '2026-01-01',
+            ],
+        ];
+
+        $request = new StoreProyeccionRequest;
+        $validator = Validator::make($data, $request->rules(), $request->messages());
+
+        $this->assertTrue($validator->passes(), $validator->errors()->toJson());
+    }
+
+    public function test_store_falla_con_estado_invalido_en_el_instrumento(): void
+    {
+        $data = [
+            'id_nivel' => Nivel::factory()->create()->id,
+            'id_institucion' => Institucion::factory()->create()->id,
+            'instrumento' => [
+                'anio' => '2026',
+                'estado' => 'Invalido',
+            ],
+        ];
+
+        $request = new StoreProyeccionRequest;
+        $validator = Validator::make($data, $request->rules(), $request->messages());
+
         $this->assertTrue($validator->fails());
-        $this->assertArrayHasKey('estado', $validator->errors()->toArray());
+        $this->assertArrayHasKey('instrumento.estado', $validator->errors()->toArray());
+    }
+
+    public function test_store_requiere_anio_cuando_viene_instrumento(): void
+    {
+        $data = [
+            'id_nivel' => Nivel::factory()->create()->id,
+            'id_institucion' => Institucion::factory()->create()->id,
+            'instrumento' => ['motivo' => 'Continuidad'],
+        ];
+
+        $request = new StoreProyeccionRequest;
+        $validator = Validator::make($data, $request->rules(), $request->messages());
+
+        $this->assertTrue($validator->fails());
+        $this->assertArrayHasKey('instrumento.anio', $validator->errors()->toArray());
     }
 }

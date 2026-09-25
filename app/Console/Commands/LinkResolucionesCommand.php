@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\Proyeccion;
+use App\Models\ProyeccionInstrumento;
 use App\Models\Resolucion;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +13,7 @@ class LinkResolucionesCommand extends Command
 {
     protected $signature = 'proyecciones:link-resoluciones {--dry-run : Solo auditoría sin modificar BD} {--execute : Ejecuta linkeo real} {--clear-string : Vacía resolucion_ministerial tras linkear (default true con --execute)}';
 
-    protected $description = 'Linkea proyecciones.resolucion_ministerial con resoluciones existentes (normaliza N° a 4 dígitos)';
+    protected $description = 'Linkea proyeccion_instrumentos.resolucion_ministerial con resoluciones existentes (normaliza N° a 4 dígitos)';
 
     public function handle(): int
     {
@@ -63,24 +63,24 @@ class LinkResolucionesCommand extends Command
 
         $this->info('Resoluciones cargadas: '.count($map).' normalizables de '.$resoluciones->count().' totales.');
 
-        $proyecciones = Proyeccion::whereNotNull('resolucion_ministerial')
+        $instrumentos = ProyeccionInstrumento::whereNotNull('resolucion_ministerial')
             ->where('resolucion_ministerial', '!=', '')
             ->get(['id', 'resolucion_ministerial', 'id_resolucion']);
 
-        $alreadyLinked = Proyeccion::whereNotNull('id_resolucion')->count();
+        $alreadyLinked = ProyeccionInstrumento::whereNotNull('id_resolucion')->count();
 
         $rows = [];
         $linkables = [];
         $orphans = 0;
         $invalids = 0;
 
-        foreach ($proyecciones as $proj) {
-            $raw = $proj->resolucion_ministerial ?? '';
+        foreach ($instrumentos as $instrumento) {
+            $raw = $instrumento->resolucion_ministerial ?? '';
             $norm = $this->normalize($raw);
 
             if ($norm === null) {
                 $invalids++;
-                $rows[] = [$proj->id, $raw, 'INVALIDO', 'INVALIDO', 'IGNORAR'];
+                $rows[] = [$instrumento->id, $raw, 'INVALIDO', 'INVALIDO', 'IGNORAR'];
 
                 continue;
             }
@@ -88,24 +88,24 @@ class LinkResolucionesCommand extends Command
             if (isset($map[$norm])) {
                 $resId = $map[$norm];
                 $resNombre = $resolucionNames[$resId];
-                $accion = $proj->id_resolucion ? 'YA LINKEADA' : 'LINKEAR';
-                $rows[] = [$proj->id, $raw, $norm, "{$resId} / {$resNombre}", $accion];
-                if (! $proj->id_resolucion) {
-                    $linkables[] = ['proyeccion' => $proj, 'resolucion_id' => $resId, 'normalized' => $norm];
+                $accion = $instrumento->id_resolucion ? 'YA LINKEADA' : 'LINKEAR';
+                $rows[] = [$instrumento->id, $raw, $norm, "{$resId} / {$resNombre}", $accion];
+                if (! $instrumento->id_resolucion) {
+                    $linkables[] = ['instrumento' => $instrumento, 'resolucion_id' => $resId, 'normalized' => $norm];
                 }
             } else {
                 $orphans++;
-                $rows[] = [$proj->id, $raw, $norm, 'NO EXISTE', 'ORPHAN'];
+                $rows[] = [$instrumento->id, $raw, $norm, 'NO EXISTE', 'ORPHAN'];
             }
         }
 
         if (empty($rows)) {
-            $this->info('No hay proyecciones con resolucion_ministerial para procesar.');
+            $this->info('No hay instrumentos con resolucion_ministerial para procesar.');
         } else {
             $this->table(['ID', 'Raw', 'Normalizado', 'Resolución ID/Nombre', 'Acción'], $rows);
         }
 
-        $total = $proyecciones->count();
+        $total = $instrumentos->count();
         $linkableCount = count($linkables);
 
         $this->info("Resumen: total={$total}, linkables={$linkableCount}, orphans={$orphans}, invalids={$invalids}, ya linkeadas={$alreadyLinked}");
@@ -122,7 +122,7 @@ class LinkResolucionesCommand extends Command
             return self::SUCCESS;
         }
 
-        $this->warn("Se linkearán {$linkableCount} proyecciones".($shouldClear ? ' y se vaciará resolucion_ministerial' : ' (manteniendo resolucion_ministerial)').'.');
+        $this->warn("Se linkearán {$linkableCount} instrumentos".($shouldClear ? ' y se vaciará resolucion_ministerial' : ' (manteniendo resolucion_ministerial)').'.');
 
         if (! $this->confirm('¿Confirmás la ejecución?', false)) {
             $this->info('Cancelado.');
@@ -134,21 +134,21 @@ class LinkResolucionesCommand extends Command
         $chunks = array_chunk($linkables, 500);
 
         foreach ($chunks as $index => $chunk) {
-            DB::transaction(function () use ($chunk, $shouldClear, &$updated) {
+            DB::transaction(function () use ($chunk, $shouldClear, &$updated): void {
                 foreach ($chunk as $item) {
-                    $proj = $item['proyeccion'];
+                    $instrumento = $item['instrumento'];
                     $data = ['id_resolucion' => $item['resolucion_id']];
                     if ($shouldClear) {
                         $data['resolucion_ministerial'] = null;
                     }
-                    DB::table('proyecciones')->where('id', $proj->id)->update($data);
+                    DB::table('proyeccion_instrumentos')->where('id', $instrumento->id)->update($data);
                     $updated++;
                 }
             });
             $this->info('Batch '.($index + 1).'/'.count($chunks)." procesado ({$updated}/{$linkableCount})");
         }
 
-        $this->info("Listo: {$updated} proyecciones linkeadas.");
+        $this->info("Listo: {$updated} instrumentos linkeados.");
 
         return self::SUCCESS;
     }
