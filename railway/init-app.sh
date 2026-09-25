@@ -8,8 +8,10 @@
 #   1. migrate --force  -> aplica migraciones pendientes (incluye el guard
 #                          anti-pérdida de 000003: si hay una proyección sin
 #                          año, falla y el deploy se aborta).
-#   2. optimize:clear   -> limpia cachés de config/rutas/vistas para el
-#                          entorno de producción.
+#
+# Nota: corre en un contenedor descartable (sin volúmenes), así que cualquier
+# caché de filesystem (optimize:clear y similares) es inútil acá: no afecta
+# al contenedor de la app, que arranca del image del build.
 #
 set -euo pipefail
 
@@ -17,4 +19,3 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 php artisan migrate --force --ansi
-php artisan optimize:clear
