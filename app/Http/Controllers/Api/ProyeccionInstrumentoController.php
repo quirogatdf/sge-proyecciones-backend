@@ -67,4 +67,26 @@ final class ProyeccionInstrumentoController extends Controller
             'message' => 'Instrumento actualizado correctamente',
         ]);
     }
+
+    /**
+     * Eliminar un instrumento del historial.
+     *
+     * No se permite borrar el último instrumento de la proyección: el listado
+     * y las estadísticas se arman con un JOIN contra proyeccion_instrumentos,
+     * así que una proyección sin snapshots quedaría huérfana e invisible.
+     * Si la plaza dejó de existir, se borra la proyección completa (su delete
+     * arrastra el historial por cascade).
+     */
+    public function destroy(Proyeccion $proyeccion, ProyeccionInstrumento $instrumento): Response
+    {
+        abort_unless($instrumento->proyeccion_id === $proyeccion->id, Response::HTTP_NOT_FOUND);
+
+        $quedaSoloEste = $proyeccion->instrumentos()->count() <= 1;
+
+        abort_if($quedaSoloEste, Response::HTTP_CONFLICT, 'No se puede eliminar el último instrumento de la proyección.');
+
+        $instrumento->delete();
+
+        return response()->noContent();
+    }
 }

@@ -36,5 +36,6 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('proyecciones/{proyeccion}/instrumentos', [ProyeccionInstrumentoController::class, 'index']);
     Route::post('proyecciones/{proyeccion}/instrumentos', [ProyeccionInstrumentoController::class, 'store']);
     Route::put('proyecciones/{proyeccion}/instrumentos/{instrumento}', [ProyeccionInstrumentoController::class, 'update']);
+    Route::delete('proyecciones/{proyeccion}/instrumentos/{instrumento}', [ProyeccionInstrumentoController::class, 'destroy']);
     Route::apiResource('proyecciones', ProyeccionController::class);
 });

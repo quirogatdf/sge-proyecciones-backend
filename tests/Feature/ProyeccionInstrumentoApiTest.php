@@ -215,4 +215,50 @@ class ProyeccionInstrumentoApiTest extends TestCase
         $this->putJson("/api/proyecciones/{$proyeccion->id}/instrumentos/999", ['estado' => 'Autorizado'])
             ->assertNotFound();
     }
+
+    public function test_destroy_elimina_un_instrumento_del_historial(): void
+    {
+        $proyeccion = Proyeccion::factory()->create();
+        ProyeccionInstrumento::factory()->create(['proyeccion_id' => $proyeccion->id, 'anio' => '2025']);
+        $instrumento = ProyeccionInstrumento::factory()->create(['proyeccion_id' => $proyeccion->id, 'anio' => '2026']);
+
+        $this->deleteJson("/api/proyecciones/{$proyeccion->id}/instrumentos/{$instrumento->id}")
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing('proyeccion_instrumentos', ['id' => $instrumento->id]);
+        $this->assertDatabaseHas('proyeccion_instrumentos', ['proyeccion_id' => $proyeccion->id, 'anio' => '2025']);
+    }
+
+    public function test_destroy_returns_404_si_el_instrumento_no_pertenece_a_la_proyeccion(): void
+    {
+        $p1 = Proyeccion::factory()->create();
+        $p2 = Proyeccion::factory()->create();
+        ProyeccionInstrumento::factory()->create(['proyeccion_id' => $p1->id, 'anio' => '2025']);
+        $instrumento = ProyeccionInstrumento::factory()->create(['proyeccion_id' => $p1->id, 'anio' => '2026']);
+
+        $this->deleteJson("/api/proyecciones/{$p2->id}/instrumentos/{$instrumento->id}")
+            ->assertNotFound();
+
+        $this->assertDatabaseHas('proyeccion_instrumentos', ['id' => $instrumento->id]);
+    }
+
+    public function test_destroy_returns_409_si_es_el_unico_instrumento_de_la_proyeccion(): void
+    {
+        $proyeccion = Proyeccion::factory()->create();
+        $instrumento = ProyeccionInstrumento::factory()->create(['proyeccion_id' => $proyeccion->id, 'anio' => '2026']);
+
+        $this->deleteJson("/api/proyecciones/{$proyeccion->id}/instrumentos/{$instrumento->id}")
+            ->assertConflict()
+            ->assertJsonPath('message', 'No se puede eliminar el último instrumento de la proyección.');
+
+        $this->assertDatabaseHas('proyeccion_instrumentos', ['id' => $instrumento->id]);
+    }
+
+    public function test_destroy_returns_404_for_nonexistent_instrumento(): void
+    {
+        $proyeccion = Proyeccion::factory()->create();
+
+        $this->deleteJson("/api/proyecciones/{$proyeccion->id}/instrumentos/999")
+            ->assertNotFound();
+    }
 }
