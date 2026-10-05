@@ -1,0 +1,23 @@
+# Fix de build en Railway/Railpack. NO borrar sin leer esto.
+#
+# Railpack compila PHP siempre a través de mise, y mise resuelve el shortname
+# `php` contra su registro de plugins, que hoy apunta a:
+#
+#     https://github.com/jdx/vfox-php.git   -> HTTP 404
+#
+# Cuando el clone da 404, git pide credenciales de GitHub. En CI no hay TTY, así
+# que el build muere con:
+#
+#     mise ERROR Failed to obtain credentials
+#     mise ERROR Couldn't open terminal at "/dev/tty"
+#     ✖ Failed to run mise command '.../mise ls-remote php@8.4'
+#
+# Acá se sobreescribe el shortname `php` con el plugin real, que es un
+# asdf-plugin[https://mise.jdx.dev/configuration.html#plugins-specify-custom-plugin-repository-urls].
+#
+# Se sobreescribe SOLO la URL del plugin. Deliberadamente NO se declara
+# [tools] php: la versión ya la pide Railpack desde composer.json (^8.4), y
+# pinear acá forcefula a 8.4 en cualquier máquina que use mise, que hoy corre
+# 8.5.1.
+[plugins]
+php = "https://github.com/asdf-community/asdf-php.git"
