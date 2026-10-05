@@ -11,11 +11,13 @@ use App\Http\Requests\UpdateProyeccionRequest;
 use App\Http\Resources\ProyeccionResource;
 use App\Models\Proyeccion;
 use App\Models\ProyeccionInstrumento;
+use App\Services\RegistroCamposBuscables;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 final class ProyeccionController extends Controller
 {
@@ -33,6 +35,8 @@ final class ProyeccionController extends Controller
      */
     private const COLUMNAS_PLAZA = ['id_institucion', 'id_puesto'];
 
+    public function __construct(private readonly RegistroCamposBuscables $registro) {}
+
     /**
      * Listado de proyecciones para un año (por defecto, el último con datos).
      *
@@ -41,6 +45,7 @@ final class ProyeccionController extends Controller
      * Supports:
      * - ?anio=YYYY    (default: último año con instrumentos)
      * - ?search=term
+     * - ?search_field=__all__|<key>   (default: __all__ = comportamiento heredado)
      * - ?page=N / ?per_page=N
      * - ?id_nivel=N / ?id_resolucion=N / ?id_cargo=N / ?motivo= / ?localidad=
      */
@@ -97,32 +102,7 @@ final class ProyeccionController extends Controller
         }
 
         if ($request->filled('search')) {
-            $search = $request->string('search')->toString();
-            $query->where(function ($q) use ($search, $anio): void {
-                if (is_numeric($search)) {
-                    $q->where('proyecciones.id', (int) $search);
-                }
-
-                $q->orWhere('pi.estado', 'ILIKE', "%{$search}%")
-                    ->orWhere('pi.motivo', 'ILIKE', "%{$search}%")
-                    ->orWhere('pi.destino_nuevo', 'ILIKE', "%{$search}%")
-                    ->orWhere('pi.resolucion_ministerial', 'ILIKE', "%{$search}%")
-                    ->orWhere('pi.n_expediente', 'ILIKE', "%{$search}%")
-                    ->orWhere('proyecciones.id_puesto', 'ILIKE', "%{$search}%")
-                    ->orWhere('pi.anio', 'ILIKE', "%{$search}%")
-                    ->orWhereHas('institucion', function ($i) use ($search): void {
-                        $i->where('nombre', 'ILIKE', "%{$search}%")
-                            ->orWhere('localidad', 'ILIKE', "%{$search}%");
-                    })
-                    ->orWhereHas('instrumentos', function ($i) use ($search, $anio): void {
-                        $i->where('anio', $anio)
-                            ->where(function ($w) use ($search): void {
-                                $w->whereHas('cargo', fn ($c) => $c->where('nombre', 'ILIKE', "%{$search}%")
-                                    ->orWhere('codigo', 'ILIKE', "%{$search}%"))
-                                    ->orWhereHas('resolucion', fn ($r) => $r->where('nombre', 'ILIKE', "%{$search}%"));
-                            });
-                    });
-            });
+            $this->aplicarBusqueda($query, $request, $anio);
         }
 
         $this->aplicarOrden($query, $request);
@@ -354,6 +334,92 @@ final class ProyeccionController extends Controller
             ->distinct()
             ->orderByDesc('anio')
             ->pluck('anio');
+    }
+
+    /**
+     * Resuelve el campo de búsqueda (`search_field`) y delega.
+     *
+     * Un `search_field` desconocido NO es un error: degrada a `__all__` con un
+     * `Log::warning`. No hay estado de error en el `CrudTable` del frontend, así que
+     * un 422 se vería como tabla vacía sin mensaje; y `aplicarOrden()` ya degrada en
+     * silencio un `sort_by` desconocido a `id` — es la convención del propio archivo.
+     * La seguridad no depende de esta política: el key se resuelve contra un array
+     * fijo y no hay interpolación posible.
+     */
+    private function aplicarBusqueda($query, Request $request, string $anio): void
+    {
+        $search = $request->string('search')->toString();
+
+        // `is_string` evita que `?search_field[]=x` reviente el Request::string().
+        $raw = $request->input('search_field');
+        $key = is_string($raw) ? trim($raw) : null;
+
+        if ($key === null || $key === '' || $key === RegistroCamposBuscables::SENTINEL_TODOS) {
+            $this->aplicarBusquedaTodosLosCampos($query, $search, $anio);
+
+            return;
+        }
+
+        $campo = $this->registro->buscar($key);
+
+        if ($campo === null) {
+            Log::warning('search_field desconocido; se degrada a __all__', ['search_field' => $key]);
+            $this->aplicarBusquedaTodosLosCampos($query, $search, $anio);
+
+            return;
+        }
+
+        $this->registro->aplicar($query, $campo, $search, $anio);
+    }
+
+    /**
+     * Cadena `OR` heredada — LITERAL CONGELADO.
+     *
+     * NO se reconstruye desde `RegistroCamposBuscables`: la cadena heredada no es un
+     * subconjunto del registro (tiene la rama `is_numeric` y excluye los 10 campos
+     * nuevos). Reconstruirla obligaría a elegir entre cambiar `__all__` o perder la
+     * rama numérica; ambas son cambios de producto.
+     *
+     * Único cambio dentro del literal: `ILIKE` → `orWhereLike(..., caseSensitive: false)`
+     * y el escapado de wildcards. `ILIKE` crudo es Postgres puro y revienta al
+     * EJECUTAR en SQLite (no al compilar) — y los tests corren en SQLite `:memory:`.
+     */
+    private function aplicarBusquedaTodosLosCampos($query, string $search, string $anio): void
+    {
+        $patron = '%'.RegistroCamposBuscables::escaparLike($search).'%';
+
+        $query->where(function ($q) use ($patron, $search, $anio): void {
+            // ── Rama numérica heredada. CONGELADA A PROPÓSITO ──
+            // No es un bug de sintaxis: genera SQL válido `WHERE (id = 123 OR ...)`.
+            // Es un problema de producto: buscar "123" devuelve la fila 123 MÁS todo lo
+            // que contenga "123". El match EXACTO se expone por `search_field=id`
+            // (tipo=numero ⇒ igualdad). NO "arreglar" esta rama más adelante: cambia el
+            // contrato de `search` en silencio y afecta a export-dialog y a cualquier
+            // cliente futuro que mande `search` sin `search_field`.
+            if (is_numeric($search)) {
+                $q->where('proyecciones.id', (int) $search);
+            }
+
+            $q->orWhereLike('pi.estado', $patron, caseSensitive: false)
+                ->orWhereLike('pi.motivo', $patron, caseSensitive: false)
+                ->orWhereLike('pi.destino_nuevo', $patron, caseSensitive: false)
+                ->orWhereLike('pi.resolucion_ministerial', $patron, caseSensitive: false)
+                ->orWhereLike('pi.n_expediente', $patron, caseSensitive: false)
+                ->orWhereLike('proyecciones.id_puesto', $patron, caseSensitive: false)
+                ->orWhereLike('pi.anio', $patron, caseSensitive: false)
+                ->orWhereHas('institucion', function ($i) use ($patron): void {
+                    $i->whereLike('nombre', $patron, caseSensitive: false)
+                        ->orWhereLike('localidad', $patron, caseSensitive: false);
+                })
+                ->orWhereHas('instrumentos', function ($i) use ($patron, $anio): void {
+                    $i->where('anio', $anio)
+                        ->where(function ($w) use ($patron): void {
+                            $w->whereHas('cargo', fn ($c) => $c->whereLike('nombre', $patron, caseSensitive: false)
+                                ->orWhereLike('codigo', $patron, caseSensitive: false))
+                                ->orWhereHas('resolucion', fn ($r) => $r->whereLike('nombre', $patron, caseSensitive: false));
+                        });
+                });
+        });
     }
 
     private function aplicarOrden($query, Request $request): void

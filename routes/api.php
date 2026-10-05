@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CargoController;
 use App\Http\Controllers\Api\FuncionController;
 use App\Http\Controllers\Api\InstitucionController;
 use App\Http\Controllers\Api\NivelController;
+use App\Http\Controllers\Api\ProyeccionBusquedaController;
 use App\Http\Controllers\Api\ProyeccionController;
 use App\Http\Controllers\Api\ProyeccionExportController;
 use App\Http\Controllers\Api\ProyeccionFiltroController;
@@ -30,6 +31,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::apiResource('resoluciones', ResolucionController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
     Route::get('proyecciones/export', [ProyeccionExportController::class, 'export']);
     Route::get('proyecciones/opciones-filtro', [ProyeccionFiltroController::class, 'opciones']);
+    // ANTES del apiResource de la línea siguiente: `proyecciones/{proyeccion}` matchea
+    // cualquier string, así que declarado después, `campos-buscables` se traga como id.
+    Route::get('proyecciones/campos-buscables', [ProyeccionBusquedaController::class, 'camposBuscables']);
     Route::get('proyecciones/stats/by-institucion', [ProyeccionController::class, 'statsByInstitucion']);
     Route::get('proyecciones/stats/por-anio', [ProyeccionController::class, 'statsPorAnio']);
     Route::get('proyecciones/nivel/{idNivel}', [ProyeccionController::class, 'byNivel']);
