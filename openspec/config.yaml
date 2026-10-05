@@ -2,10 +2,11 @@
 schema: spec-driven
 
 context: |
-  Tech stack: Laravel 13 with PHP 8.4
-  Architecture: Standard Laravel MVC with Eloquent ORM
-  Testing: PHPUnit 12.5+ with Unit and Feature test suites
-  Style: Laravel Pint for formatting
+  Tech stack: Laravel 13, PHP ^8.4 (runtime 8.5.1), PostgreSQL, Sanctum 4.3, maatwebsite/excel 4.0
+  Architecture: Standard Laravel MVC + Eloquent; Form Requests, Resources, Policies, Enums
+  Testing: PHPUnit 12.5.23 (NOT Pest) with Unit and Feature suites
+  Style: Laravel Pint 1.29.1
+  Artifact language: Spanish. Spec style: REQ-{TAG}-{N} + SCENARIO-N (Given/When/Then)
 
 strict_tdd: true
 
@@ -33,29 +34,53 @@ rules:
     - Warn before merging destructive deltas (large removals)
 
 testing:
-  ## Testing Capabilities
-
-  **Strict TDD Mode**: enabled
-  **Detected**: Wed Apr 29 2026
-
-  ### Test Runner
-  - Command: `composer test` (runs `php artisan test`)
-  - Framework: PHPUnit 12.5+
-
-  ### Test Layers
-  | Layer | Available | Tool |
-  |-------|-----------|------|
-  | Unit | ✅ | PHPUnit (tests/Unit) |
-  | Integration | ✅ | Laravel TestCase (tests/Feature) |
-  | E2E | ❌ | Not installed |
-
-  ### Coverage
-  - Available: ✅
-  - Command: `php artisan test --coverage`
-
-  ### Quality Tools
-  | Tool | Available | Command |
-  |------|-----------|---------|
-  | Linter | ✅ | `./vendor/bin/pint` |
-  | Type checker | ❌ | Not installed (PHPStan/Psalm not present) |
-  | Formatter | ✅ | `./vendor/bin/pint` |
+  strict_tdd: true
+  detected: "Mon Oct 05 2026 (re-verified; supersedes the Apr 29 2026 detection)"
+  runner:
+    command: "composer test"
+    command_expanded: "php artisan config:clear && php artisan test"
+    command_direct: "./vendor/bin/phpunit --no-coverage"
+    framework: "PHPUnit 12.5.23"
+    pest_installed: false
+    suites:
+      unit: "php artisan test --testsuite=Unit"
+      feature: "php artisan test --testsuite=Feature"
+    single_file: "./vendor/bin/phpunit tests/Feature/ProyeccionInstrumentoApiTest.php"
+  layers:
+    unit:
+      available: true
+      tool: "PHPUnit"
+      location: "tests/Unit (Enums, Models, Policies, Requests, Resources, Services, Migration)"
+    integration:
+      available: true
+      tool: "Laravel Tests\\TestCase"
+      location: "tests/Feature (API, Authorization, Migration)"
+    e2e:
+      available: false
+      tool: null
+      note: "Not installed; E2E lives in the frontend via Playwright."
+  database_in_tests:
+    engine: "sqlite"
+    dsn: ":memory:"
+    note: >-
+      phpunit.xml overrides DB_CONNECTION=sqlite and DB_DATABASE=:memory: while local/dev data is
+      PostgreSQL. Any raw SQL, ILIKE, ON CONFLICT, JSON operators, full-text search or other
+      Postgres-specific constructs added for search/filtering MUST be sqlite-compatible or the suite
+      breaks. Prefer the query builder / Eloquent so both engines agree.
+  baseline:
+    date: "2026-10-05"
+    status: green
+    tests_passed: 149
+    tests_total: 149
+    assertions: 476
+    duration: "~3.3s"
+    note: "Green baseline. Any failure after this point is a regression from the active change."
+  coverage:
+    available: false
+    command: null
+    note: "No Xdebug or PCOV extension installed, so `php artisan test --coverage` cannot run."
+  quality:
+    lint: { available: true, command: "./vendor/bin/pint" }
+    format: { available: true, command: "./vendor/bin/pint" }
+    format_check: { available: true, command: "./vendor/bin/pint --test" }
+    typecheck: { available: false, command: null, note: "No PHPStan or Psalm installed." }

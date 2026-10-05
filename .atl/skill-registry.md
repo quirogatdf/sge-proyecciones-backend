@@ -2,7 +2,7 @@
 
 Mode-independent infrastructure file listing all available skills for this project.
 
-Last updated: Tue May 05 2026
+Last updated: Mon Oct 05 2026 (re-verified at sdd-init; all paths still resolve)
 
 ## Available Skills (Excluding sdd-*, skill-registry, _shared)
 
