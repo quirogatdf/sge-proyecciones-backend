@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\Proyeccion;
 use App\Models\ProyeccionInstrumento;
+use App\Models\Resolucion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -43,15 +44,21 @@ class ProyeccionInstrumentoApiTest extends TestCase
     public function test_index_returns_snapshot_con_relaciones(): void
     {
         $proyeccion = Proyeccion::factory()->create();
+        $rect1 = Resolucion::factory()->create();
+        $rect2 = Resolucion::factory()->create();
         $instrumento = ProyeccionInstrumento::factory()->create([
             'proyeccion_id' => $proyeccion->id,
             'anio' => '2026',
+            'id_resolucion_rect1' => $rect1->id,
+            'id_resolucion_rect2' => $rect2->id,
         ]);
 
         $response = $this->getJson("/api/proyecciones/{$proyeccion->id}/instrumentos");
 
         $response->assertOk()
             ->assertJsonPath('data.0.resolucion.nombre', $instrumento->resolucion->nombre)
+            ->assertJsonPath('data.0.resolucion_rect1.nombre', $rect1->nombre)
+            ->assertJsonPath('data.0.resolucion_rect2.nombre', $rect2->nombre)
             ->assertJsonPath('data.0.cargo.nombre', $instrumento->cargo->nombre)
             ->assertJsonPath('data.0.funcion.nombre', $instrumento->funcion->nombre)
             ->assertJsonPath('data.0.turno.nombre', $instrumento->turno->nombre);
@@ -70,24 +77,45 @@ class ProyeccionInstrumentoApiTest extends TestCase
     public function test_store_creates_instrumento(): void
     {
         $proyeccion = Proyeccion::factory()->create();
+        $rect1 = Resolucion::factory()->create();
+        $rect2 = Resolucion::factory()->create();
 
         $response = $this->postJson("/api/proyecciones/{$proyeccion->id}/instrumentos", [
             'anio' => '2027',
             'orden' => 12,
             'destino_nuevo' => 'Juzgado Civil N° 1',
             'observaciones' => 'Continuidad 2027',
+            'id_resolucion_rect1' => $rect1->id,
+            'id_resolucion_rect2' => $rect2->id,
         ]);
 
         $response->assertCreated()
             ->assertJsonPath('data.anio', '2027')
             ->assertJsonPath('data.orden', 12)
             ->assertJsonPath('data.destino_nuevo', 'Juzgado Civil N° 1')
-            ->assertJsonPath('data.observaciones', 'Continuidad 2027');
+            ->assertJsonPath('data.observaciones', 'Continuidad 2027')
+            ->assertJsonPath('data.id_resolucion_rect1', $rect1->id)
+            ->assertJsonPath('data.id_resolucion_rect2', $rect2->id)
+            ->assertJsonPath('data.resolucion_rect1.nombre', $rect1->nombre)
+            ->assertJsonPath('data.resolucion_rect2.nombre', $rect2->nombre);
 
         $this->assertDatabaseHas('proyeccion_instrumentos', [
             'proyeccion_id' => $proyeccion->id,
             'anio' => '2027',
+            'id_resolucion_rect1' => $rect1->id,
+            'id_resolucion_rect2' => $rect2->id,
         ]);
+    }
+
+    public function test_store_valida_resolucion_de_rectificacion_inexistente(): void
+    {
+        $proyeccion = Proyeccion::factory()->create();
+
+        $this->postJson("/api/proyecciones/{$proyeccion->id}/instrumentos", [
+            'anio' => '2027',
+            'id_resolucion_rect1' => 999999,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['id_resolucion_rect1']);
     }
 
     public function test_store_validates_required_anio(): void
@@ -159,6 +187,30 @@ class ProyeccionInstrumentoApiTest extends TestCase
         $this->assertDatabaseHas('proyeccion_instrumentos', [
             'id' => $instrumento->id,
             'estado' => 'Autorizado',
+        ]);
+    }
+
+    public function test_update_actualiza_resoluciones_de_rectificacion(): void
+    {
+        $proyeccion = Proyeccion::factory()->create();
+        $instrumento = ProyeccionInstrumento::factory()->create([
+            'proyeccion_id' => $proyeccion->id,
+            'anio' => '2026',
+        ]);
+        $rect1 = Resolucion::factory()->create();
+        $rect2 = Resolucion::factory()->create();
+
+        $this->putJson("/api/proyecciones/{$proyeccion->id}/instrumentos/{$instrumento->id}", [
+            'id_resolucion_rect1' => $rect1->id,
+            'id_resolucion_rect2' => $rect2->id,
+        ])->assertOk()
+            ->assertJsonPath('data.resolucion_rect1.nombre', $rect1->nombre)
+            ->assertJsonPath('data.resolucion_rect2.nombre', $rect2->nombre);
+
+        $this->assertDatabaseHas('proyeccion_instrumentos', [
+            'id' => $instrumento->id,
+            'id_resolucion_rect1' => $rect1->id,
+            'id_resolucion_rect2' => $rect2->id,
         ]);
     }
 

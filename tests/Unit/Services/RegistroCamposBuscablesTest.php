@@ -55,19 +55,38 @@ class RegistroCamposBuscablesTest extends TestCase
         self::assertSame($keys, array_unique($keys), 'Hay keys duplicados en el registro.');
     }
 
-    public function test_los_diez_campos_nuevos_estan_presentes(): void
+    public function test_los_campos_nuevos_estan_presentes(): void
     {
-        // Los 10 que el Camino 1 migró a proyeccion_instrumentos y que NO eran buscables.
-        $nuevos = [
+        // Los 8 que siguen siendo columnas directas de proyeccion_instrumentos.
+        $directos = [
             'resolucion_ministerial_ext', 'disposicion_sgnij', 'rect_disposoco_sgnij',
-            'resolucion_ministerial_rect1', 'resolucion_ministerial_rect2',
             'resolucion_previa_continuidad', 'destino_anterior', 'observaciones',
             'fecha_desde', 'fecha_hasta',
         ];
 
-        foreach ($nuevos as $key) {
+        foreach ($directos as $key) {
             self::assertNotNull($this->registro->buscar($key), "Falta el campo nuevo: {$key}");
         }
+
+        // Las dos rectificaciones ahora son FKs a `resoluciones`.
+        foreach (['resolucion_ministerial_rect1', 'resolucion_ministerial_rect2'] as $key) {
+            $campo = $this->registro->buscar($key);
+
+            self::assertNotNull($campo, "Falta el campo de rectificación: {$key}");
+            self::assertSame(OrigenCampoBuscable::Relacion, $campo->origen);
+            self::assertTrue($campo->anioScope, "{$key} cuelga de instrumentos: debe acotarse al año.");
+        }
+    }
+
+    public function test_las_rectificaciones_buscan_por_el_nombre_de_la_resolucion(): void
+    {
+        $rect1 = $this->registro->buscar('resolucion_ministerial_rect1');
+        $rect2 = $this->registro->buscar('resolucion_ministerial_rect2');
+
+        self::assertSame(['instrumentos', 'resolucionRect1'], $rect1->relacion);
+        self::assertSame('nombre', $rect1->columna);
+        self::assertSame(['instrumentos', 'resolucionRect2'], $rect2->relacion);
+        self::assertSame('nombre', $rect2->columna);
     }
 
     public function test_toda_columna_directa_existe_en_el_esquema(): void

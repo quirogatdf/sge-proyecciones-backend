@@ -22,7 +22,7 @@ final class ProyeccionInstrumentoController extends Controller
     public function index(Proyeccion $proyeccion): JsonResponse
     {
         $instrumentos = $proyeccion->instrumentos()
-            ->with(['resolucion', 'cargo', 'funcion', 'turno'])
+            ->with(['resolucion', 'resolucionRect1', 'resolucionRect2', 'cargo', 'funcion', 'turno'])
             ->orderByDesc('anio')
             ->get();
 
@@ -39,7 +39,7 @@ final class ProyeccionInstrumentoController extends Controller
     {
         $instrumento = $proyeccion->instrumentos()->create($request->validated());
 
-        $instrumento->load(['resolucion', 'cargo', 'funcion', 'turno']);
+        $instrumento->load(['resolucion', 'resolucionRect1', 'resolucionRect2', 'cargo', 'funcion', 'turno']);
 
         return response()->json([
             'data' => new ProyeccionInstrumentoResource($instrumento),
@@ -60,7 +60,7 @@ final class ProyeccionInstrumentoController extends Controller
 
         $instrumento->update($request->validated());
 
-        $instrumento->load(['resolucion', 'cargo', 'funcion', 'turno']);
+        $instrumento->load(['resolucion', 'resolucionRect1', 'resolucionRect2', 'cargo', 'funcion', 'turno']);
 
         return response()->json([
             'data' => new ProyeccionInstrumentoResource($instrumento),

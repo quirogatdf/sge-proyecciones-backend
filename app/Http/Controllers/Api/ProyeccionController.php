@@ -75,7 +75,7 @@ final class ProyeccionController extends Controller
                 'nivel',
                 'institucion',
                 'instrumentos' => fn ($q) => $q->where('anio', $anio)
-                    ->with(['cargo', 'funcion', 'turno', 'resolucion']),
+                    ->with(['cargo', 'funcion', 'turno', 'resolucion', 'resolucionRect1', 'resolucionRect2']),
             ])
             ->select('proyecciones.*');
 
@@ -188,7 +188,7 @@ final class ProyeccionController extends Controller
         return [
             'nivel',
             'institucion',
-            'instrumentos' => fn ($q) => $q->with(['cargo', 'funcion', 'turno', 'resolucion'])
+            'instrumentos' => fn ($q) => $q->with(['cargo', 'funcion', 'turno', 'resolucion', 'resolucionRect1', 'resolucionRect2'])
                 ->orderByDesc('anio'),
         ];
     }

@@ -29,8 +29,8 @@ class ProyeccionInstrumentoTest extends TestCase
             'resolucion_ministerial_ext',
             'disposicion_sgnij',
             'rect_disposoco_sgnij',
-            'resolucion_ministerial_rect1',
-            'resolucion_ministerial_rect2',
+            'id_resolucion_rect1',
+            'id_resolucion_rect2',
             'resolucion_previa_continuidad',
             'id_cargo',
             'id_funcion',
@@ -72,17 +72,21 @@ class ProyeccionInstrumentoTest extends TestCase
         $instrumento->orden = '12';
         $instrumento->horar = '20';
         $instrumento->cargos = '5';
+        $instrumento->id_resolucion_rect1 = '7';
+        $instrumento->id_resolucion_rect2 = '9';
 
         $this->assertSame(12, $instrumento->orden);
         $this->assertSame(20, $instrumento->horar);
         $this->assertSame(5, $instrumento->cargos);
+        $this->assertSame(7, $instrumento->id_resolucion_rect1);
+        $this->assertSame(9, $instrumento->id_resolucion_rect2);
     }
 
     public function test_relaciones_son_belongs_to(): void
     {
         $instrumento = new ProyeccionInstrumento;
 
-        foreach (['proyeccion', 'resolucion', 'cargo', 'funcion', 'turno'] as $relacion) {
+        foreach (['proyeccion', 'resolucion', 'resolucionRect1', 'resolucionRect2', 'cargo', 'funcion', 'turno'] as $relacion) {
             $this->assertInstanceOf(BelongsTo::class, $instrumento->{$relacion}());
         }
     }

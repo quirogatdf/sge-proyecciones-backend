@@ -54,8 +54,8 @@ class ProyeccionResource extends JsonResource
             'resolucion_ministerial_ext' => $inst?->resolucion_ministerial_ext,
             'disposicion_sgnij' => $inst?->disposicion_sgnij,
             'rect_disposoco_sgnij' => $inst?->rect_disposoco_sgnij,
-            'resolucion_ministerial_rect1' => $inst?->resolucion_ministerial_rect1,
-            'resolucion_ministerial_rect2' => $inst?->resolucion_ministerial_rect2,
+            'id_resolucion_rect1' => $inst?->id_resolucion_rect1,
+            'id_resolucion_rect2' => $inst?->id_resolucion_rect2,
             'resolucion_previa_continuidad' => $inst?->resolucion_previa_continuidad,
             'destino_anterior' => $inst?->destino_anterior,
             'destino_nuevo' => $inst?->destino_nuevo,
@@ -70,6 +70,8 @@ class ProyeccionResource extends JsonResource
             'funcion' => $inst?->relationLoaded('funcion') ? $inst->funcion : null,
             'turno' => $inst?->relationLoaded('turno') ? $inst->turno : null,
             'resolucion' => $inst?->relationLoaded('resolucion') ? $inst->resolucion : null,
+            'resolucion_rect1' => $inst?->relationLoaded('resolucionRect1') ? $inst->resolucionRect1 : null,
+            'resolucion_rect2' => $inst?->relationLoaded('resolucionRect2') ? $inst->resolucionRect2 : null,
 
             // Historial completo (solo en el detalle)
             'instrumentos' => $this->relationLoaded('instrumentos')

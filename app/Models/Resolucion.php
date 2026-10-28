@@ -35,4 +35,14 @@ final class Resolucion extends Model
     {
         return $this->hasMany(ProyeccionInstrumento::class, 'id_resolucion');
     }
+
+    public function instrumentosRect1(): HasMany
+    {
+        return $this->hasMany(ProyeccionInstrumento::class, 'id_resolucion_rect1');
+    }
+
+    public function instrumentosRect2(): HasMany
+    {
+        return $this->hasMany(ProyeccionInstrumento::class, 'id_resolucion_rect2');
+    }
 }

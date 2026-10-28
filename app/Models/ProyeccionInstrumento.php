@@ -40,8 +40,8 @@ class ProyeccionInstrumento extends Model
         'resolucion_ministerial_ext',
         'disposicion_sgnij',
         'rect_disposoco_sgnij',
-        'resolucion_ministerial_rect1',
-        'resolucion_ministerial_rect2',
+        'id_resolucion_rect1',
+        'id_resolucion_rect2',
         'resolucion_previa_continuidad',
         'id_cargo',
         'id_funcion',
@@ -61,6 +61,8 @@ class ProyeccionInstrumento extends Model
         'orden' => 'integer',
         'horar' => 'integer',
         'cargos' => 'integer',
+        'id_resolucion_rect1' => 'integer',
+        'id_resolucion_rect2' => 'integer',
     ];
 
     public function proyeccion(): BelongsTo
@@ -71,6 +73,16 @@ class ProyeccionInstrumento extends Model
     public function resolucion(): BelongsTo
     {
         return $this->belongsTo(Resolucion::class, 'id_resolucion');
+    }
+
+    public function resolucionRect1(): BelongsTo
+    {
+        return $this->belongsTo(Resolucion::class, 'id_resolucion_rect1');
+    }
+
+    public function resolucionRect2(): BelongsTo
+    {
+        return $this->belongsTo(Resolucion::class, 'id_resolucion_rect2');
     }
 
     public function cargo(): BelongsTo

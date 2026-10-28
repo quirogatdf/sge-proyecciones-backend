@@ -6,6 +6,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\Proyeccion;
 use App\Models\ProyeccionInstrumento;
+use App\Models\Resolucion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
@@ -173,7 +174,7 @@ class ProyeccionBusquedaTest extends TestCase
             ->assertJsonPath('meta.total', 0);
     }
 
-    // ─────────────────────────── los 10 campos nuevos ───────────────────────────
+    // ─────────────────────────── los campos nuevos directos ───────────────────────────
 
     /**
      * @return array<string, array{0: string, 1: string, 2: string}> [campo, valor en DB, término buscado]
@@ -184,8 +185,6 @@ class ProyeccionBusquedaTest extends TestCase
             'resolucion_ministerial_ext' => ['resolucion_ministerial_ext', 'EXT-999', 'EXT-999'],
             'disposicion_sgnij' => ['disposicion_sgnij', 'DISP-999', 'DISP-999'],
             'rect_disposoco_sgnij' => ['rect_disposoco_sgnij', 'RECT-999', 'RECT-999'],
-            'resolucion_ministerial_rect1' => ['resolucion_ministerial_rect1', 'RECT1-999', 'RECT1-999'],
-            'resolucion_ministerial_rect2' => ['resolucion_ministerial_rect2', 'RECT2-999', 'RECT2-999'],
             'resolucion_previa_continuidad' => ['resolucion_previa_continuidad', 'PREVIA-999', 'PREVIA-999'],
             'destino_anterior' => ['destino_anterior', 'ANTERIOR-999', 'ANTERIOR-999'],
             'observaciones' => ['observaciones', 'OBS-999', 'OBS-999'],
@@ -196,7 +195,7 @@ class ProyeccionBusquedaTest extends TestCase
     }
 
     #[DataProvider('camposNuevosProvider')]
-    public function test_los_diez_campos_nuevos_son_buscables(string $campo, string $valor, string $termino): void
+    public function test_los_campos_nuevos_directos_son_buscables(string $campo, string $valor, string $termino): void
     {
         $this->crearProyeccion('Autorizado', 'SM-2026-001', extra: [$campo => $valor]);
 
@@ -210,6 +209,39 @@ class ProyeccionBusquedaTest extends TestCase
     }
 
     // ─────────────────────────── campos de relación ───────────────────────────
+
+    public function test_busqueda_por_resolucion_de_rectificacion_1(): void
+    {
+        $resolucion = Resolucion::factory()->create(['nombre' => 'RECT1-999', 'año' => 2026]);
+        $this->crearProyeccion('Autorizado', 'SM-2026-001', extra: [
+            'id_resolucion_rect1' => $resolucion->id,
+        ]);
+
+        $this->getJson('/api/proyecciones?anio=2026&search=RECT1-999&search_field=resolucion_ministerial_rect1')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1);
+
+        // `__all__` es la cadena heredada y no incluye las rectificaciones.
+        $this->getJson('/api/proyecciones?anio=2026&search=RECT1-999')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 0);
+    }
+
+    public function test_busqueda_por_resolucion_de_rectificacion_2(): void
+    {
+        $resolucion = Resolucion::factory()->create(['nombre' => 'RECT2-999', 'año' => 2026]);
+        $this->crearProyeccion('Autorizado', 'SM-2026-001', extra: [
+            'id_resolucion_rect2' => $resolucion->id,
+        ]);
+
+        $this->getJson('/api/proyecciones?anio=2026&search=RECT2-999&search_field=resolucion_ministerial_rect2')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1);
+
+        $this->getJson('/api/proyecciones?anio=2026&search=RECT2-999')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 0);
+    }
 
     public function test_busqueda_por_institucion_usa_existencia(): void
     {

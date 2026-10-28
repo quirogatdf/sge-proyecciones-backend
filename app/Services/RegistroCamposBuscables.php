@@ -52,12 +52,11 @@ final class RegistroCamposBuscables
             $instrumento('anio', 'Año', TipoCampoBuscable::Texto),
             $instrumento('n_expediente', 'N° de expediente', TipoCampoBuscable::Texto),
             $instrumento('resolucion_ministerial', 'Resolución ministerial', TipoCampoBuscable::Texto),
-            // Los 10 que hasta ahora NO eran buscables (migrados en el Camino 1):
+            // Campos migrados en el Camino 1 (las rectificaciones se movieron a relaciones):
             $instrumento('resolucion_ministerial_ext', 'Resolución ministerial (ext.)', TipoCampoBuscable::Texto),
             $instrumento('disposicion_sgnij', 'Disposición SGNIJ', TipoCampoBuscable::Texto),
             $instrumento('rect_disposoco_sgnij', 'Rectificación disposición OCO SGNIJ', TipoCampoBuscable::Texto),
-            $instrumento('resolucion_ministerial_rect1', 'Resolución ministerial (rect. 1)', TipoCampoBuscable::Texto),
-            $instrumento('resolucion_ministerial_rect2', 'Resolución ministerial (rect. 2)', TipoCampoBuscable::Texto),
+            // Las rectificaciones ahora son FKs a `resoluciones` (se buscan por relación).
             $instrumento('resolucion_previa_continuidad', 'Resolución previa de continuidad', TipoCampoBuscable::Texto),
             $instrumento('destino_anterior', 'Destino anterior', TipoCampoBuscable::Texto),
             $instrumento('destino_nuevo', 'Destino nuevo', TipoCampoBuscable::Texto),
@@ -71,6 +70,8 @@ final class RegistroCamposBuscables
             CampoBuscable::viaRelacion('cargo_nombre', 'Cargo', TipoCampoBuscable::Texto, 'nombre', ['instrumentos', 'cargo'], true),
             CampoBuscable::viaRelacion('cargo_codigo', 'Código de cargo', TipoCampoBuscable::Texto, 'codigo', ['instrumentos', 'cargo'], true),
             CampoBuscable::viaRelacion('resolucion_nombre', 'Resolución (nombre)', TipoCampoBuscable::Texto, 'nombre', ['instrumentos', 'resolucion'], true),
+            CampoBuscable::viaRelacion('resolucion_ministerial_rect1', 'Resolución ministerial (rect. 1)', TipoCampoBuscable::Texto, 'nombre', ['instrumentos', 'resolucionRect1'], true),
+            CampoBuscable::viaRelacion('resolucion_ministerial_rect2', 'Resolución ministerial (rect. 2)', TipoCampoBuscable::Texto, 'nombre', ['instrumentos', 'resolucionRect2'], true),
         ];
     }
 
