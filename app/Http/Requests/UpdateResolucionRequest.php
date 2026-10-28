@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\TipoResolucion;
+use Illuminate\Validation\Rule;
+
 final class UpdateResolucionRequest extends ApiRequest
 {
     public function rules(): array
@@ -11,6 +14,7 @@ final class UpdateResolucionRequest extends ApiRequest
         return [
             'nombre' => ['sometimes', 'required', 'string', 'max:255'],
             'año' => ['sometimes', 'required', 'integer', 'digits:4', 'min:1900', 'max:'.(date('Y') + 10)],
+            'tipo' => ['sometimes', 'nullable', Rule::enum(TipoResolucion::class)],
             'observacion' => ['sometimes', 'nullable', 'string'],
             'url' => ['sometimes', 'nullable', 'string', 'url', 'max:2048'],
         ];
@@ -27,6 +31,7 @@ final class UpdateResolucionRequest extends ApiRequest
             'año.digits' => 'El año debe tener 4 dígitos.',
             'año.min' => 'El año debe ser posterior a 1900.',
             'año.max' => 'El año no puede ser mayor a '.(date('Y') + 10).'.',
+            'tipo.enum' => 'El tipo debe ser: Creación, Continuidad, Rectificación o Sin definir.',
             'observacion.string' => 'La observación debe ser una cadena de texto.',
             'url.string' => 'La URL debe ser una cadena de texto.',
             'url.url' => 'La URL debe tener un formato válido.',

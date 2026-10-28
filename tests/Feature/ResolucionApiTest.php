@@ -36,6 +36,7 @@ class ResolucionApiTest extends TestCase
         $resolucion = Resolucion::factory()->create([
             'nombre' => 'Resolución Test',
             'año' => 2025,
+            'tipo' => 'Continuidad',
             'observacion' => 'Observación de prueba',
             'url' => 'https://example.com/resolucion',
         ]);
@@ -45,6 +46,7 @@ class ResolucionApiTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('data.nombre', 'Resolución Test')
             ->assertJsonPath('data.año', 2025)
+            ->assertJsonPath('data.tipo', 'Continuidad')
             ->assertJsonPath('data.observacion', 'Observación de prueba')
             ->assertJsonPath('data.url', 'https://example.com/resolucion');
     }
@@ -75,6 +77,36 @@ class ResolucionApiTest extends TestCase
             'nombre' => 'Resolución Nueva',
             'año' => 2025,
         ]);
+    }
+
+    public function test_store_creates_resolucion_with_tipo(): void
+    {
+        $response = $this->postJson('/api/resoluciones', [
+            'nombre' => 'Resolución con tipo',
+            'año' => 2026,
+            'tipo' => 'Rectificación',
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.nombre', 'Resolución con tipo')
+            ->assertJsonPath('data.tipo', 'Rectificación');
+
+        $this->assertDatabaseHas('resoluciones', [
+            'nombre' => 'Resolución con tipo',
+            'tipo' => 'Rectificación',
+        ]);
+    }
+
+    public function test_store_rejects_invalid_tipo(): void
+    {
+        $response = $this->postJson('/api/resoluciones', [
+            'nombre' => 'Resolución con tipo inválido',
+            'año' => 2026,
+            'tipo' => 'Baja',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['tipo']);
     }
 
     public function test_store_validates_required_nombre(): void
@@ -118,6 +150,7 @@ class ResolucionApiTest extends TestCase
         $response->assertCreated()
             ->assertJsonPath('data.nombre', 'Resolución Básica')
             ->assertJsonPath('data.año', 2025)
+            ->assertJsonPath('data.tipo', 'Sin definir')
             ->assertJsonPath('data.observacion', null)
             ->assertJsonPath('data.url', null);
     }
@@ -138,6 +171,26 @@ class ResolucionApiTest extends TestCase
             ->assertJsonPath('data.año', 2026);
 
         $this->assertDatabaseHas('resoluciones', ['nombre' => 'Modificado']);
+    }
+
+    public function test_update_modifies_tipo(): void
+    {
+        $resolucion = Resolucion::factory()->create([
+            'nombre' => 'Sin tipo',
+            'tipo' => null,
+        ]);
+
+        $response = $this->putJson("/api/resoluciones/{$resolucion->id}", [
+            'tipo' => 'Creación',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.tipo', 'Creación');
+
+        $this->assertDatabaseHas('resoluciones', [
+            'id' => $resolucion->id,
+            'tipo' => 'Creación',
+        ]);
     }
 
     public function test_destroy_deletes_resolucion(): void
