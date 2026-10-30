@@ -31,7 +31,7 @@ final class UpdateResolucionRequest extends ApiRequest
             'año.digits' => 'El año debe tener 4 dígitos.',
             'año.min' => 'El año debe ser posterior a 1900.',
             'año.max' => 'El año no puede ser mayor a '.(date('Y') + 10).'.',
-            'tipo.enum' => 'El tipo debe ser: Creación, Continuidad, Rectificación o Sin definir.',
+            'tipo.enum' => 'El tipo debe ser: Creación, Continuidad, Baja, Rectificación o Sin definir.',
             'observacion.string' => 'La observación debe ser una cadena de texto.',
             'url.string' => 'La URL debe ser una cadena de texto.',
             'url.url' => 'La URL debe tener un formato válido.',

@@ -97,12 +97,29 @@ class ResolucionApiTest extends TestCase
         ]);
     }
 
+    public function test_store_acepta_tipo_baja(): void
+    {
+        $response = $this->postJson('/api/resoluciones', [
+            'nombre' => 'Resolución de baja',
+            'año' => 2026,
+            'tipo' => 'Baja',
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.tipo', 'Baja');
+
+        $this->assertDatabaseHas('resoluciones', [
+            'nombre' => 'Resolución de baja',
+            'tipo' => 'Baja',
+        ]);
+    }
+
     public function test_store_rejects_invalid_tipo(): void
     {
         $response = $this->postJson('/api/resoluciones', [
             'nombre' => 'Resolución con tipo inválido',
             'año' => 2026,
-            'tipo' => 'Baja',
+            'tipo' => 'Tipo inexistente',
         ]);
 
         $response->assertUnprocessable()

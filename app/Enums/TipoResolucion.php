@@ -8,6 +8,7 @@ enum TipoResolucion: string
 {
     case Creacion = 'Creación';
     case Continuidad = 'Continuidad';
+    case Baja = 'Baja';
     case Rectificacion = 'Rectificación';
     case SinDefinir = 'Sin definir';
 }
