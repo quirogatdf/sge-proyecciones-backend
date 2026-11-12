@@ -29,7 +29,15 @@ final class ProyeccionExportService
     public function getExportData(array $filters): array
     {
         $query = ProyeccionInstrumento::query()
-            ->with(['cargo', 'funcion', 'turno', 'resolucion', 'proyeccion.institucion']);
+            ->with([
+                'cargo',
+                'funcion',
+                'turno',
+                'resolucion',
+                'resolucionRect1',
+                'resolucionRect2',
+                'proyeccion.institucion',
+            ]);
 
         // Optional filters
         if (! empty($filters['motivo'])) {
@@ -109,6 +117,12 @@ final class ProyeccionExportService
             $turno?->sigla ?? '',                           // Turno (inicial)
             $instrumento->destino_nuevo ?? null,            // Destino 2026
             $instrumentoLegal,                              // Instrumento Legal (resolucion + orden)
+            $instrumento->resolucion_ministerial_ext ?? '', // Res. Ministerial Ext.
+            $instrumento->disposicion_sgnij ?? '',          // Disposición SGNIJ
+            $instrumento->rect_disposoco_sgnij ?? '',       // Rectificación Disposición SGNIJ
+            $instrumento->resolucion_previa_continuidad ?? '', // Resolución Previa Continuidad
+            $instrumento->resolucionRect1?->nombre ?? '',   // Res. Ministerial Rect. 1
+            $instrumento->resolucionRect2?->nombre ?? '',   // Res. Ministerial Rect. 2
             null,                                           // Destino 2027 (always null)
         ];
     }

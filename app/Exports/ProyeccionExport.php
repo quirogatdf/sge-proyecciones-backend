@@ -52,6 +52,12 @@ final class ProyeccionExport implements FromCollection, ShouldAutoSize, WithHead
             'Turno',
             'Destino 2026',
             'Instrumento Legal',
+            'Res. Ministerial Ext.',
+            'Disposición SGNIJ',
+            'Rectificación Disposición SGNIJ',
+            'Resolución Previa Continuidad',
+            'Res. Ministerial Rect. 1',
+            'Res. Ministerial Rect. 2',
             'Destino 2027',
         ];
     }
