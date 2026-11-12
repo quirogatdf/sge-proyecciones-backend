@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\MotivoProyeccion;
 use App\Http\Controllers\Controller;
 use App\Models\Cargo;
 use App\Models\Institucion;
@@ -13,6 +14,7 @@ use App\Models\Resolucion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 final class ProyeccionFiltroController extends Controller
 {
@@ -29,7 +31,7 @@ final class ProyeccionFiltroController extends Controller
             'id_institucion' => ['nullable', 'integer', 'exists:instituciones,id'],
             'id_nivel' => ['nullable', 'integer', 'exists:niveles,id'],
             'id_cargo' => ['nullable', 'integer', 'exists:cargos,id'],
-            'motivo' => ['nullable', 'string', 'in:Creación,Creacion,Continuidad'],
+            'motivo' => ['nullable', 'string', Rule::in(MotivoProyeccion::valoresParaFiltro())],
             'anio' => ['nullable', 'string', 'size:4'],
             'año' => ['nullable', 'string', 'size:4'],
         ]);

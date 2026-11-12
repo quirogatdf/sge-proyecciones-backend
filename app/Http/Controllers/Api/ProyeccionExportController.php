@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\MotivoProyeccion;
 use App\Exports\ProyeccionExport;
 use App\Http\Controllers\Controller;
 use App\Services\ProyeccionExportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -22,7 +24,7 @@ final class ProyeccionExportController extends Controller
      * Export proyecciones to Excel.
      *
      * Query params:
-     *   - motivo: 'Continuidad' | 'Creacion' (default: 'Continuidad')
+     *   - motivo: Creación | Continuidad | Planta funcional | Baja | Sin definir
      *   - id_nivel: int (optional)
      *   - id_institucion: int (optional)
      *   - id_cargo: int (optional)
@@ -34,7 +36,7 @@ final class ProyeccionExportController extends Controller
     public function export(Request $request)
     {
         $validated = $request->validate([
-            'motivo' => 'nullable|string|in:Continuidad,Creacion,Creación',
+            'motivo' => ['nullable', 'string', Rule::in(MotivoProyeccion::valoresParaFiltro())],
             'id_nivel' => 'nullable|integer|exists:niveles,id',
             'id_institucion' => 'nullable|integer|exists:instituciones,id',
             'id_cargo' => 'nullable|integer|exists:cargos,id',

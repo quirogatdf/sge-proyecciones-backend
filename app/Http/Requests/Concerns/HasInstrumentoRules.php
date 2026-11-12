@@ -54,7 +54,7 @@ trait HasInstrumentoRules
     {
         return [
             "{$prefix}estado.enum" => 'El estado debe ser: Autorizado, Rechazado o Pendiente.',
-            "{$prefix}motivo.enum" => 'El motivo debe ser: Creación, Continuidad, Baja o Sin definir.',
+            "{$prefix}motivo.enum" => 'El motivo debe ser: Creación, Continuidad, Planta funcional, Baja o Sin definir.',
             "{$prefix}fecha_desde.date" => 'La fecha desde debe ser una fecha válida.',
             "{$prefix}fecha_hasta.date" => 'La fecha hasta debe ser una fecha válida.',
             "{$prefix}fecha_hasta.after_or_equal" => 'La fecha hasta debe ser igual o posterior a la fecha desde.',

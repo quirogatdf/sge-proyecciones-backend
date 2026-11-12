@@ -79,4 +79,25 @@ class ProyeccionFiltroControllerTest extends TestCase
         $response->assertOk()
             ->assertJsonCount(2, 'data.niveles');
     }
+
+    public function test_opciones_acepta_todos_los_motivos_del_enum(): void
+    {
+        foreach (['Planta funcional', 'Baja', 'Sin definir'] as $motivo) {
+            $institucion = Institucion::factory()->create();
+            $proyeccion = Proyeccion::factory()->create(['id_institucion' => $institucion->id]);
+            ProyeccionInstrumento::factory()->create([
+                'proyeccion_id' => $proyeccion->id,
+                'anio' => '2026',
+                'motivo' => $motivo,
+            ]);
+
+            $response = $this->getJson(
+                '/api/proyecciones/opciones-filtro?anio=2026&motivo=' . urlencode($motivo)
+            );
+
+            $response->assertOk()
+                ->assertJsonCount(1, 'data.instituciones')
+                ->assertJsonPath('data.instituciones.0.id', $institucion->id);
+        }
+    }
 }

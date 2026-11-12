@@ -13,9 +13,10 @@ class MotivoProyeccionTest extends TestCase
     {
         $cases = MotivoProyeccion::cases();
 
-        $this->assertCount(4, $cases);
+        $this->assertCount(5, $cases);
         $this->assertContainsEquals(MotivoProyeccion::Creacion, $cases);
         $this->assertContainsEquals(MotivoProyeccion::Continuidad, $cases);
+        $this->assertContainsEquals(MotivoProyeccion::PlantaFuncional, $cases);
         $this->assertContainsEquals(MotivoProyeccion::Baja, $cases);
         $this->assertContainsEquals(MotivoProyeccion::SinDefinir, $cases);
     }
@@ -24,8 +25,17 @@ class MotivoProyeccionTest extends TestCase
     {
         $this->assertEquals('Creación', MotivoProyeccion::Creacion->value);
         $this->assertEquals('Continuidad', MotivoProyeccion::Continuidad->value);
+        $this->assertEquals('Planta funcional', MotivoProyeccion::PlantaFuncional->value);
         $this->assertEquals('Baja', MotivoProyeccion::Baja->value);
         $this->assertEquals('Sin definir', MotivoProyeccion::SinDefinir->value);
+    }
+
+    public function test_valores_para_filtro_incluye_todos_los_valores_y_el_alias(): void
+    {
+        $this->assertSame(
+            ['Creación', 'Continuidad', 'Planta funcional', 'Baja', 'Sin definir', 'Creacion'],
+            MotivoProyeccion::valoresParaFiltro(),
+        );
     }
 
     public function test_enum_is_backed_string(): void
